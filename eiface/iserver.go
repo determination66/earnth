@@ -1,7 +1,6 @@
 package eiface
 
-// 定义Server接口
-
+// IServer 定义Server接口
 type IServer interface {
 	// Start 启动服务器
 	Start()
