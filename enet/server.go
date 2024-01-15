@@ -44,8 +44,6 @@ func (s *Server) Start() {
 		var cid uint32
 		cid = 0
 
-		//NewConnection()
-
 		//3.阻塞等待客户端连接，处理客户端业务(读写)
 		for {
 			//如果客户端连接，阻塞返回
@@ -57,27 +55,7 @@ func (s *Server) Start() {
 
 			dealConn := NewConnection(conn, cid, CallBack)
 			cid++
-
 			go dealConn.Start()
-
-			////客户端已经建立连接，conn,最基本最大512回写业务
-			//go func() {
-			//	for {
-			//		buf := make([]byte, 512)
-			//		cnt, err := conn.Read(buf)
-			//		if err != nil {
-			//			fmt.Println("Read err:", err)
-			//			continue
-			//		}
-			//		fmt.Println("client send:", string(buf))
-			//		// 回写功能
-			//		if _, err := conn.Write(buf[:cnt]); err != nil {
-			//			fmt.Println("write back err:", err)
-			//			continue
-			//		}
-			//	}
-			//}()
-
 		}
 
 	}()

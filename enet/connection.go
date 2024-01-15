@@ -4,6 +4,7 @@ import (
 	"earnth/eiface"
 	"fmt"
 	"net"
+	"time"
 )
 
 type Connection struct {
@@ -35,16 +36,18 @@ func NewConnection(conn *net.TCPConn, connID uint32, callbackAPI eiface.HandleFu
 
 func (c *Connection) StartReader() {
 	fmt.Println("Reader goroutine is running...")
-	defer fmt.Println("ConnId=", c, "reader exit ,remote Addr is:", c.RemoteAddr().String())
+	defer fmt.Println("ConnId=", c.ConnID, "reader exit ,remote Addr is:", c.RemoteAddr().String())
 	defer c.Stop()
 
 	for {
 		//读取客户端数据到buf
 		buf := make([]byte, 512)
+		var err error
 		cnt, err := c.Conn.Read(buf)
 		if err != nil {
 			fmt.Println("recv buf err:", err)
-			continue
+			time.Sleep(time.Second)
+			break
 		}
 		//调用当前连接绑定的HandlAPI
 		err = c.handleAPI(c.Conn, buf, cnt)
