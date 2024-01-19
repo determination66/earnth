@@ -14,6 +14,7 @@ type Server struct {
 	Port      int
 }
 
+// CallBack 当前定义的HandleFunc
 func CallBack(conn *net.TCPConn, data []byte, cnt int) error {
 	fmt.Println("Callback is called!")
 	_, err := conn.Write(data[:cnt])

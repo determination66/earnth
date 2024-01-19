@@ -23,7 +23,6 @@ func main() {
 			fmt.Println("conn write err:", err)
 			return
 		}
-
 		buf := make([]byte, 512)
 		cnt, err := conn.Read(buf)
 		if err != nil {
