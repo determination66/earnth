@@ -2,6 +2,7 @@ package enet
 
 import (
 	"earnth/eiface"
+	"earnth/utils"
 	"fmt"
 	"net"
 )
@@ -81,12 +82,12 @@ func (s *Server) AddRouter(router eiface.IRouter) {
 }
 
 // NewServer 初始化Server模块方法
-func NewServer(name string) eiface.IServer {
+func NewServer() eiface.IServer {
 	return &Server{
-		Name:      name,
+		Name:      utils.GlobalObject.Name,
 		IpVersion: "tcp4",
-		Ip:        "0.0.0.0",
-		Port:      8888,
+		Ip:        utils.GlobalObject.Host,
+		Port:      utils.GlobalObject.TcpPort,
 		Router:    nil,
 	}
 

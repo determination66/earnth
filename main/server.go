@@ -33,7 +33,7 @@ func (pr *PingRouter) PostHandle(req eiface.IRequest) {
 }
 
 func main() {
-	s := enet.NewServer("earnth-v0.1")
+	s := enet.NewServer()
 	s.AddRouter(&PingRouter{})
 	s.Serve()
 }

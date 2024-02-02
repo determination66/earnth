@@ -1,0 +1,6 @@
+{
+  "Name":"earnth-v0.1",
+  "Host":"127.0.0.1",
+  "TcpPort":8888,
+  "MaxConn":3
+}
