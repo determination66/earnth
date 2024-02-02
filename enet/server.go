@@ -2,7 +2,6 @@ package enet
 
 import (
 	"earnth/eiface"
-	"errors"
 	"fmt"
 	"net"
 )
@@ -17,14 +16,14 @@ type Server struct {
 }
 
 // CallBack 当前定义的HandleFunc
-func CallBack(conn *net.TCPConn, data []byte, cnt int) error {
-	fmt.Println("Callback is called!")
-	_, err := conn.Write(data[:cnt])
-	if err != nil {
-		return errors.New("CallBack to client err")
-	}
-	return nil
-}
+//func CallBack(conn *net.TCPConn, data []byte, cnt int) error {
+//	fmt.Println("Callback is called!")
+//	_, err := conn.Write(data[:cnt])
+//	if err != nil {
+//		return errors.New("CallBack to client err")
+//	}
+//	return nil
+//}
 
 // Start 启动Server
 func (s *Server) Start() {
@@ -56,7 +55,7 @@ func (s *Server) Start() {
 				continue
 			}
 
-			dealConn := NewConnection(conn, cid, CallBack)
+			dealConn := NewConnection(conn, cid, s.Router)
 			cid++
 			go dealConn.Start()
 		}
@@ -75,7 +74,9 @@ func (s *Server) Serve() {
 	select {}
 }
 
-func (s *Server) AddRouter() {
+func (s *Server) AddRouter(router eiface.IRouter) {
+	s.Router = router
+	fmt.Println("Add router success!!")
 
 }
 
@@ -86,6 +87,7 @@ func NewServer(name string) eiface.IServer {
 		IpVersion: "tcp4",
 		Ip:        "0.0.0.0",
 		Port:      8888,
+		Router:    nil,
 	}
 
 }

@@ -4,7 +4,6 @@ import (
 	"earnth/eiface"
 	"fmt"
 	"net"
-	"time"
 )
 
 type Connection struct {
@@ -17,23 +16,20 @@ type Connection struct {
 	//当前连接状态
 	isClose bool
 
-	//当前连接所绑定的业务方法API
-	handleAPI eiface.HandleFunc
-
 	//告知当前连接已经退出
-	ExitChan chan bool
+	ExitBuffChan chan bool
 
 	//该连接处理的方法
 	Router eiface.IRouter
 }
 
-func NewConnection(conn *net.TCPConn, connID uint32, callbackAPI eiface.HandleFunc) *Connection {
+func NewConnection(conn *net.TCPConn, connID uint32, router eiface.IRouter) *Connection {
 	return &Connection{
-		Conn:      conn,
-		ConnID:    connID,
-		isClose:   false,
-		handleAPI: callbackAPI,
-		ExitChan:  make(chan bool, 1),
+		Conn:         conn,
+		ConnID:       connID,
+		isClose:      false,
+		Router:       router,
+		ExitBuffChan: make(chan bool, 1),
 	}
 }
 
@@ -46,18 +42,26 @@ func (c *Connection) StartReader() {
 		//读取客户端数据到buf
 		buf := make([]byte, 512)
 		var err error
-		cnt, err := c.Conn.Read(buf)
+		_, err = c.Conn.Read(buf)
 		if err != nil {
 			fmt.Println("recv buf err:", err)
-			time.Sleep(time.Second)
-			break
+			c.ExitBuffChan <- true
+			continue
+			//time.Sleep(time.Second)
+			//break
 		}
-		//调用当前连接绑定的handleAPI
-		err = c.handleAPI(c.Conn, buf, cnt)
-		if err != nil {
-			fmt.Println("ConnID", c.ConnID, " handle err:", err)
-			break
+		//得到当前客户端请求的Request数据
+		req := Request{
+			conn: c,
+			data: buf,
 		}
+		//从路由Routers 中找到注册绑定Conn的对应Handle
+		go func(request eiface.IRequest) {
+			//执行注册的路由方法
+			c.Router.PreHandle(request)
+			c.Router.Handle(request)
+			c.Router.PostHandle(request)
+		}(&req)
 
 	}
 }
@@ -78,7 +82,7 @@ func (c *Connection) Stop() {
 	c.isClose = true
 
 	c.Conn.Close()
-	close(c.ExitChan)
+	close(c.ExitBuffChan)
 }
 
 func (c *Connection) GetTcpConnection() *net.TCPConn {
