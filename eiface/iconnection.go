@@ -10,7 +10,7 @@ type IConnection interface {
 	Stop()
 	// GetTcpConnection 获取当前连接的socket conn
 	GetTcpConnection() *net.TCPConn
-	//GetConnId 获取远程的tcp状态
+	//GetConnId 获取远程的tcp的ID
 	GetConnId() uint32
 	// RemoteAddr 获取远程客户端TCP状态
 	RemoteAddr() net.Addr
