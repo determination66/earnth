@@ -12,6 +12,8 @@ type Server struct {
 	IpVersion string
 	Ip        string
 	Port      int
+	//Server绑定的Router
+	Router eiface.IRouter
 }
 
 // CallBack 当前定义的HandleFunc
@@ -40,7 +42,7 @@ func (s *Server) Start() {
 			fmt.Printf("listenTCP error:%v...", err)
 			return
 		}
-		fmt.Printf("start earnth server success:%s...", s.Name)
+		fmt.Printf("start earnth server success:%s...\n", s.Name)
 
 		var cid uint32
 		cid = 0
@@ -71,6 +73,10 @@ func (s *Server) Serve() {
 	s.Start()
 	// 后续可以做一些其他业务
 	select {}
+}
+
+func (s *Server) AddRouter() {
+
 }
 
 // NewServer 初始化Server模块方法

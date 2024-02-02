@@ -22,6 +22,9 @@ type Connection struct {
 
 	//告知当前连接已经退出
 	ExitChan chan bool
+
+	//该连接处理的方法
+	Router eiface.IRouter
 }
 
 func NewConnection(conn *net.TCPConn, connID uint32, callbackAPI eiface.HandleFunc) *Connection {
@@ -49,7 +52,7 @@ func (c *Connection) StartReader() {
 			time.Sleep(time.Second)
 			break
 		}
-		//调用当前连接绑定的HandlAPI
+		//调用当前连接绑定的handleAPI
 		err = c.handleAPI(c.Conn, buf, cnt)
 		if err != nil {
 			fmt.Println("ConnID", c.ConnID, " handle err:", err)
