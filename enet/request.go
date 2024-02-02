@@ -10,7 +10,7 @@ type Request struct {
 	data []byte
 }
 
-func (r *Request) GetConnect() eiface.IConnection {
+func (r *Request) GetConnection() eiface.IConnection {
 	return r.conn
 }
 
