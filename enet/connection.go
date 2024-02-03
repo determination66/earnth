@@ -4,6 +4,7 @@ import (
 	"earnth/eiface"
 	"fmt"
 	"net"
+	"time"
 )
 
 type Connection struct {
@@ -45,10 +46,10 @@ func (c *Connection) StartReader() {
 		_, err = c.Conn.Read(buf)
 		if err != nil {
 			fmt.Println("recv buf err:", err)
-			c.ExitBuffChan <- true
-			continue
-			//time.Sleep(time.Second)
-			//break
+			//c.ExitBuffChan <- true
+			//continue
+			time.Sleep(time.Second)
+			break
 		}
 		//得到当前客户端请求的Request数据
 		req := Request{
