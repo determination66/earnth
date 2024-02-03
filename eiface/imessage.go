@@ -7,6 +7,6 @@ type IMessage interface {
 	GetData() []byte
 
 	SetMsgId(uint322 uint32)
-	setData([]byte)
-	setDataLen(uint322 uint32)
+	SetData([]byte)
+	SetDataLen(uint322 uint32)
 }

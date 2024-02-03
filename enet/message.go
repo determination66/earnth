@@ -30,10 +30,10 @@ func (m *Message) SetMsgId(msgId uint32) {
 	m.Id = msgId
 }
 
-func (m *Message) setData(msgData []byte) {
+func (m *Message) SetData(msgData []byte) {
 	m.Data = msgData
 }
 
-func (m *Message) setDataLen(msgLen uint32) {
+func (m *Message) SetDataLen(msgLen uint32) {
 	m.DataLen = msgLen
 }
