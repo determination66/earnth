@@ -16,16 +16,6 @@ type Server struct {
 	Router eiface.IRouter
 }
 
-// CallBack 当前定义的HandleFunc
-//func CallBack(conn *net.TCPConn, data []byte, cnt int) error {
-//	fmt.Println("Callback is called!")
-//	_, err := conn.Write(data[:cnt])
-//	if err != nil {
-//		return errors.New("CallBack to client err")
-//	}
-//	return nil
-//}
-
 // Start 启动Server
 func (s *Server) Start() {
 	go func() {
@@ -78,7 +68,6 @@ func (s *Server) Serve() {
 func (s *Server) AddRouter(router eiface.IRouter) {
 	s.Router = router
 	fmt.Println("Add router success!!")
-
 }
 
 // NewServer 初始化Server模块方法
