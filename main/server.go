@@ -19,7 +19,7 @@ func (pr *PingRouter) PreHandle(req eiface.IRequest) {
 }
 func (pr *PingRouter) Handle(req eiface.IRequest) {
 	fmt.Println("call func Handle")
-	fmt.Println("********", req.GetData())
+	fmt.Println("********", string(req.GetData()))
 	_, err := req.GetConnection().GetTcpConnection().Write([]byte("ping ping ...."))
 	if err != nil {
 		fmt.Println("call back ping ping ping error")

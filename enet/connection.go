@@ -39,10 +39,9 @@ func (c *Connection) StartReader() {
 	fmt.Println("Reader goroutine is running...")
 	defer fmt.Println("ConnId=", c.ConnID, "reader exit ,remote Addr is:", c.RemoteAddr().String())
 	defer c.Stop()
-
+	//创建拆包解包对象
+	dp := NewDataPack()
 	for {
-		//创建拆包解包对象
-		dp := NewDataPack()
 
 		headData := make([]byte, dp.GetHeadLen())
 		if _, err := io.ReadFull(c.GetTcpConnection(), headData); err != nil {
@@ -51,26 +50,45 @@ func (c *Connection) StartReader() {
 		}
 
 		//拆包
-		msg, err := dp.UnPack(headData)
+		msgHead, err := dp.UnPack(headData)
 		if err != nil {
 			fmt.Println("unpack err:", err)
 			break
 		}
 
-		var data []byte
-		if msg.GetDataLen() > 0 {
-			data = make([]byte, msg.GetDataLen())
-			if _, err := io.ReadFull(c.GetTcpConnection(), data); err != nil {
-				fmt.Println("read msg data error:", err)
-				break
+		if msgHead.GetDataLen() > 0 {
+			//msg 是有data数据的，需要再次读取data数据
+			msg, ok := msgHead.(*Message)
+			if !ok {
+				fmt.Println("msgHead assert failed!")
+			}
+			msg.Data = make([]byte, msg.GetDataLen())
+
+			//根据dataLen从io中读取字节流
+			_, err := io.ReadFull(c.GetTcpConnection(), msg.Data)
+			if err != nil {
+				fmt.Println("server unpack data err:", err)
+				return
 			}
 
+			fmt.Println("==> Recv Msg: ID=", msg.Id, ", len=", msg.DataLen, ", data=", string(msg.Data))
 		}
+
+		//
+		//var data []byte
+		//if msg.GetDataLen() > 0 {
+		//	data = make([]byte, msg.GetDataLen())
+		//	if _, err := io.ReadFull(c.GetTcpConnection(), data); err != nil {
+		//		fmt.Println("read msg data error:", err)
+		//		break
+		//	}
+		//
+		//}
 
 		//得到当前客户端请求的Request数据
 		req := Request{
 			conn: c,
-			msg:  msg,
+			msg:  msgHead,
 		}
 		//从路由Routers 中找到注册绑定Conn的对应Handle
 		go func(request eiface.IRequest) {
