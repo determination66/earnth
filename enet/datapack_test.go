@@ -43,7 +43,6 @@ func TestDataPack(t *testing.T) {
 					if msgHead.GetDataLen() > 0 {
 						//msg 是有data数据的，需要再次读取data数据
 						msg, ok := msgHead.(*Message)
-						fmt.Println(msg)
 						if !ok {
 							fmt.Println("msgHead assert failed!")
 						}
