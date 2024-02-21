@@ -1,6 +1,7 @@
 package main
 
 import (
+	"earnth/enet"
 	"fmt"
 	"net"
 	"time"
@@ -17,9 +18,25 @@ func main() {
 		fmt.Println("net dail err:", err)
 		return
 	}
+	dp := enet.NewDataPack()
 
 	for {
-		_, err := conn.Write([]byte("hello,world!"))
+		msgs := []*enet.Message{
+			{Id: 0, DataLen: 5, Data: []byte{'h', 'e', 'l', 'l', 'o'}},
+			{Id: 1, DataLen: 5, Data: []byte{'w', 'o', 'r', 'l', 'd'}},
+		}
+		var sendData []byte
+		for _, v := range msgs {
+			data, err := dp.Pack(v)
+			if err != nil {
+				fmt.Println("pack err:", err)
+				return
+			}
+			sendData = append(sendData, data...)
+		}
+
+		_, err := conn.Write(sendData)
+		//_, err := conn.Write([]byte("hello,world!"))
 		if err != nil {
 			fmt.Println("conn write err:", err)
 			return

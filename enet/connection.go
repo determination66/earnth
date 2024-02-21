@@ -2,9 +2,10 @@ package enet
 
 import (
 	"earnth/eiface"
+	"errors"
 	"fmt"
+	"io"
 	"net"
-	"time"
 )
 
 type Connection struct {
@@ -40,21 +41,36 @@ func (c *Connection) StartReader() {
 	defer c.Stop()
 
 	for {
-		//读取客户端数据到buf
-		buf := make([]byte, 512)
-		var err error
-		_, err = c.Conn.Read(buf)
-		if err != nil {
-			fmt.Println("recv buf err:", err)
-			//c.ExitBuffChan <- true
-			//continue
-			time.Sleep(time.Second)
+		//创建拆包解包对象
+		dp := NewDataPack()
+
+		headData := make([]byte, dp.GetHeadLen())
+		if _, err := io.ReadFull(c.GetTcpConnection(), headData); err != nil {
+			fmt.Println("read msg head error:", err)
 			break
 		}
+
+		//拆包
+		msg, err := dp.UnPack(headData)
+		if err != nil {
+			fmt.Println("unpack err:", err)
+			break
+		}
+
+		var data []byte
+		if msg.GetDataLen() > 0 {
+			data = make([]byte, msg.GetDataLen())
+			if _, err := io.ReadFull(c.GetTcpConnection(), data); err != nil {
+				fmt.Println("read msg data error:", err)
+				break
+			}
+
+		}
+
 		//得到当前客户端请求的Request数据
 		req := Request{
 			conn: c,
-			data: buf,
+			msg:  msg,
 		}
 		//从路由Routers 中找到注册绑定Conn的对应Handle
 		go func(request eiface.IRequest) {
@@ -101,4 +117,23 @@ func (c *Connection) RemoteAddr() net.Addr {
 func (c *Connection) Send(data []byte) error {
 	//TODO implement me
 	panic("implement me")
+}
+
+func (c *Connection) SendMsg(msgId uint32, data []byte) error {
+	if c.isClose {
+		return errors.New("Connection closed when send msg")
+	}
+	dp := NewDataPack()
+
+	binaryMsg, err := dp.Pack(NewMsgPackage(msgId, data))
+	if err != nil {
+		fmt.Println("Pack error msgId:", err)
+		return err
+	}
+
+	if _, err := c.Conn.Write(binaryMsg); err != nil {
+		fmt.Println("write msg err,msgId:", msgId)
+		return err
+	}
+	return nil
 }
