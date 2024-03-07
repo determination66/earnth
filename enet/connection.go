@@ -39,6 +39,7 @@ func (c *Connection) StartReader() {
 	fmt.Println("Reader goroutine is running...")
 	defer fmt.Println("ConnId=", c.ConnID, "reader exit ,remote Addr is:", c.RemoteAddr().String())
 	defer c.Stop()
+
 	//创建拆包解包对象
 	dp := NewDataPack()
 	for {
@@ -50,15 +51,15 @@ func (c *Connection) StartReader() {
 		}
 
 		//拆包
-		msgHead, err := dp.UnPack(headData)
+		msg, err := dp.UnPack(headData)
 		if err != nil {
 			fmt.Println("unpack err:", err)
 			break
 		}
 
-		if msgHead.GetDataLen() > 0 {
+		if msg.GetDataLen() > 0 {
 			//msg 是有data数据的，需要再次读取data数据
-			msg, ok := msgHead.(*Message)
+			msg, ok := msg.(*Message)
 			if !ok {
 				fmt.Println("msgHead assert failed!")
 			}
@@ -74,7 +75,6 @@ func (c *Connection) StartReader() {
 			fmt.Println("==> Recv Msg: ID=", msg.Id, ", len=", msg.DataLen, ", data=", string(msg.Data))
 		}
 
-		//
 		//var data []byte
 		//if msg.GetDataLen() > 0 {
 		//	data = make([]byte, msg.GetDataLen())
@@ -88,7 +88,7 @@ func (c *Connection) StartReader() {
 		//得到当前客户端请求的Request数据
 		req := Request{
 			conn: c,
-			msg:  msgHead,
+			msg:  msg,
 		}
 		//从路由Routers 中找到注册绑定Conn的对应Handle
 		go func(request eiface.IRequest) {

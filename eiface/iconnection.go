@@ -16,6 +16,9 @@ type IConnection interface {
 	RemoteAddr() net.Addr
 	// Send 发送数据，发送给客户端
 	Send(data []byte) error
+
+	//SendMsg 直接将Message数据发送数据给远程的TCP客户端
+	SendMsg(msgId uint32, data []byte) error
 }
 
 // HandleFunc 业务处理
