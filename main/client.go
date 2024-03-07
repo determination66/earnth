@@ -3,6 +3,7 @@ package main
 import (
 	"earnth/enet"
 	"fmt"
+	"io"
 	"net"
 	"time"
 )
@@ -41,14 +42,47 @@ func main() {
 			fmt.Println("conn write err:", err)
 			return
 		}
-		buf := make([]byte, 512)
-		cnt, err := conn.Read(buf)
+
+		//buf := make([]byte, 512)
+		//cnt, err := conn.Read(buf)
+		//if err != nil {
+		//	fmt.Println("conn read err:", err)
+		//	return
+		//}
+		//fmt.Println("server call back:", string(buf), ", cnt:", cnt)
+		//
+		//time.Sleep(time.Second)
+
+		//重新获取服务端发送来的内容
+		headData := make([]byte, dp.GetHeadLen())
+		_, err = io.ReadFull(conn, headData) //ReadFull 会把msg填充满为止
 		if err != nil {
-			fmt.Println("conn read err:", err)
+			fmt.Println("read head error")
+			break
+		}
+		//将headData字节流 拆包到msg中
+		msgHead, err := dp.UnPack(headData)
+		if err != nil {
+			fmt.Println("server unpack err:", err)
 			return
 		}
-		fmt.Println("server call back:", string(buf), ", cnt:", cnt)
-		time.Sleep(time.Second)
+
+		if msgHead.GetDataLen() > 0 {
+			//msg 是有data数据的，需要再次读取data数据
+			msg := msgHead.(*enet.Message)
+			msg.Data = make([]byte, msg.GetDataLen())
+
+			//根据dataLen从io中读取字节流
+			_, err := io.ReadFull(conn, msg.Data)
+			if err != nil {
+				fmt.Println("server unpack data err:", err)
+				return
+			}
+
+			fmt.Println("==> Recv Msg: ID=", msg.Id, ", len=", msg.DataLen, ", data=", string(msg.Data))
+		}
+
+		time.Sleep(1 * time.Second)
 	}
 
 }
