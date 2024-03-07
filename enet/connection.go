@@ -10,6 +10,9 @@ import (
 )
 
 type Connection struct {
+	//当前conn属于的Server
+	TcpServer eiface.IServer
+
 	// 当前tcp套接字
 	Conn *net.TCPConn
 
@@ -26,17 +29,25 @@ type Connection struct {
 
 	//无缓冲管道，用于读写两个goroutine之间的通信
 	msgChan chan []byte
+	//有缓冲的管道，用于读写两个goroutine之间的通信
+	msgBuffChan chan []byte
 }
 
-func NewConnection(conn *net.TCPConn, connID uint32, msgHandler eiface.IMsgHandler) *Connection {
-	return &Connection{
-		Conn:       conn,
-		ConnID:     connID,
-		isClose:    false,
-		MsgHandler: msgHandler,
-		ExitChan:   make(chan bool, 1),
-		msgChan:    make(chan []byte),
+func NewConnection(server eiface.IServer, conn *net.TCPConn, connID uint32, msgHandler eiface.IMsgHandler) *Connection {
+	c := &Connection{
+		TcpServer:   server,
+		Conn:        conn,
+		ConnID:      connID,
+		isClose:     false,
+		MsgHandler:  msgHandler,
+		ExitChan:    make(chan bool, 1),
+		msgChan:     make(chan []byte),
+		msgBuffChan: make(chan []byte, utils.GlobalObject.MaxMsgChanLen),
 	}
+	//添加到链接管理当中
+	c.TcpServer.GetConnManager().Add(c)
+
+	return c
 }
 
 func (c *Connection) StartReader() {
@@ -105,6 +116,16 @@ func (c *Connection) StartWriter() {
 				fmt.Println("Send Data error:, ", err, " Conn Writer exit")
 				return
 			}
+		case data, ok := <-c.msgBuffChan:
+			if ok {
+				if _, err := c.Conn.Write(data); err != nil {
+					fmt.Println("Send Buff Data error:, ", err, " Conn Writer exit")
+					return
+				}
+			} else {
+				break
+				fmt.Println("msgBuffChan is Closed")
+			}
 		case <-c.ExitChan:
 			//conn已经关闭
 			return
@@ -140,6 +161,9 @@ func (c *Connection) Stop() {
 	c.Conn.Close()
 	c.ExitChan <- true
 
+	//删除当前的链接
+	c.TcpServer.GetConnManager().Remove(c)
+
 	//回收资源
 	close(c.ExitChan)
 	close(c.msgChan)
@@ -164,7 +188,7 @@ func (c *Connection) Send(data []byte) error {
 
 func (c *Connection) SendMsg(msgId uint32, data []byte) error {
 	if c.isClose {
-		return errors.New("connection closed when send msg")
+		return errors.New("connection closed when send msg,SendMsg")
 	}
 	dp := NewDataPack()
 
@@ -175,5 +199,22 @@ func (c *Connection) SendMsg(msgId uint32, data []byte) error {
 	}
 	//采用管道共享信息
 	c.msgChan <- binaryMsg
+	return nil
+}
+
+func (c *Connection) SendBuffMsg(msgId uint32, data []byte) error {
+	if c.isClose {
+		return errors.New("connection closed when send msg,SendBuffMsg")
+	}
+	dp := NewDataPack()
+	msg, err := dp.Pack(NewMsgPackage(msgId, data))
+	if err != nil {
+		fmt.Println("Pack error msg id = ", msgId)
+		return errors.New("Pack error msg ")
+	}
+
+	//写回客户端
+	c.msgBuffChan <- msg
+
 	return nil
 }

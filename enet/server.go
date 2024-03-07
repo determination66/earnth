@@ -20,8 +20,13 @@ type Server struct {
 
 // Start 启动Server
 func (s *Server) Start() {
+	fmt.Printf("[START] Server name: %s,listenner at IP: %s, Port %d is starting\n", s.Name, s.Ip, s.Port)
+	fmt.Printf("[EARNTH] Version: %s, MaxConn: %d, MaxPacketSize: %d\n",
+		utils.GlobalObject.Version,
+		utils.GlobalObject.MaxConn,
+		utils.GlobalObject.MaxPacketSize)
+
 	go func() {
-		fmt.Printf("[Start] Server Listener at IP: %s,Port: %d, is starting...\n", s.Ip, s.Port)
 		// 启动worker工作池
 		s.msgHandler.StartWorkerPool()
 		//1.基本服务器开发，获取Tcp的Addr
@@ -50,7 +55,12 @@ func (s *Server) Start() {
 				continue
 			}
 
-			dealConn := NewConnection(conn, cid, s.msgHandler)
+			if s.ConnManger.Len() > utils.GlobalObject.MaxConn {
+				conn.Close()
+				continue
+			}
+
+			dealConn := NewConnection(s, conn, cid, s.msgHandler)
 			cid++
 			go dealConn.Start()
 		}
@@ -61,6 +71,10 @@ func (s *Server) Start() {
 
 func (s *Server) Stop() {
 	//todo 停止服务器，状态资源，已经开辟的信息的停止
+	fmt.Println("[STOP] Earnth server , name ", s.Name)
+
+	//将其他需要清理的连接信息或者其他信息 也要一并停止或者清理
+	s.ConnManger.CLearConn()
 }
 
 func (s *Server) Serve() {
