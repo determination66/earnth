@@ -75,31 +75,13 @@ func (c *Connection) StartReader() {
 				return
 			}
 
-			fmt.Println("==> Recv Msg: ID=", msg.Id, ", len=", msg.DataLen, ", data=", string(msg.Data))
+			fmt.Println("==> Server receive Msg: ID=", msg.Id, ", len=", msg.DataLen, ", data=", string(msg.Data))
 		}
-
-		//var data []byte
-		//if msg.GetDataLen() > 0 {
-		//	data = make([]byte, msg.GetDataLen())
-		//	if _, err := io.ReadFull(c.GetTcpConnection(), data); err != nil {
-		//		fmt.Println("read msg data error:", err)
-		//		break
-		//	}
-		//
-		//}
-
 		//得到当前客户端请求的Request数据
 		req := &Request{
 			conn: c,
 			msg:  msg,
 		}
-		//从路由Routers 中找到注册绑定Conn的对应Handle
-		//go func(request eiface.IRequest) {
-		//	//执行注册的路由方法
-		//	c.Router.PreHandle(request)
-		//	c.Router.Handle(request)
-		//	c.Router.PostHandle(request)
-		//}(&req)
 		go c.MsgHandler.DoMsgHandler(req)
 
 	}
@@ -107,7 +89,6 @@ func (c *Connection) StartReader() {
 
 func (c *Connection) Start() {
 	fmt.Println("Conn Start()... ConnID", c.ConnID)
-	//启动从当前读数据业务
 	//todo 启动写数据业务
 	go c.StartReader()
 
@@ -148,9 +129,6 @@ func (c *Connection) SendMsg(msgId uint32, data []byte) error {
 	dp := NewDataPack()
 
 	binaryMsg, err := dp.Pack(NewMsgPackage(msgId, data))
-	//if string(binaryMsg) == "123456123456" {
-	//	fmt.Println("错误！！！！！！")
-	//}
 	if err != nil {
 		fmt.Println("Pack error msgId:", err)
 		return err

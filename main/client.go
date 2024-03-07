@@ -24,7 +24,7 @@ func main() {
 	for {
 		msgs := []*enet.Message{
 			{Id: 0, DataLen: 5, Data: []byte{'h', 'e', 'l', 'l', 'o'}},
-			{Id: 1, DataLen: 5, Data: []byte{'w', 'o', 'r', 'l', 'd'}},
+			//{Id: 1, DataLen: 5, Data: []byte{'w', 'o', 'r', 'l', 'd'}},
 		}
 		var sendData []byte
 		for _, v := range msgs {
@@ -69,7 +69,7 @@ func main() {
 				return
 			}
 
-			fmt.Println("==> Recv Msg: ID=", msg.Id, ", len=", msg.DataLen, ", data=", string(msg.Data))
+			fmt.Println("==> Client receive Msg: ID=", msg.Id, ", len=", msg.DataLen, ", data=", string(msg.Data))
 		}
 
 		time.Sleep(1 * time.Second)
