@@ -10,4 +10,6 @@ type IServer interface {
 	Serve()
 	// AddRouter 注册路由供客户端连接
 	AddRouter(msgId uint32, router IRouter)
+	// GetConnManager 得到链接管理
+	GetConnManager() IConnManger
 }

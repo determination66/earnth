@@ -2,6 +2,7 @@ package enet
 
 import (
 	"earnth/eiface"
+	"earnth/utils"
 	"errors"
 	"fmt"
 	"io"
@@ -82,8 +83,13 @@ func (c *Connection) StartReader() {
 			conn: c,
 			msg:  msg,
 		}
-		go c.MsgHandler.DoMsgHandler(req)
-
+		//go c.MsgHandler.DoMsgHandler(req)
+		if utils.GlobalObject.WorkerPoolSize > 0 {
+			//已经启动工作池机制，将消息交给Worker处理
+			c.MsgHandler.SendMsgToTaskQueue(req)
+		} else {
+			go c.MsgHandler.DoMsgHandler(req)
+		}
 	}
 }
 

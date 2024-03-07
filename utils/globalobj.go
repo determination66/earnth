@@ -13,13 +13,17 @@ type GlobalObj struct {
 	TcpPort   int
 	Name      string
 
-	Version       string
-	MaxConn       int
-	MaxPacketSize uint32
+	Version          string
+	MaxConn          int
+	MaxPacketSize    uint32
+	WorkerPoolSize   uint32
+	MaxWorkerTaskLen uint32
+
+	ConfigFilePath string
 }
 
 func (g *GlobalObj) Reload() {
-	data, err := os.ReadFile("config/earnth.json")
+	data, err := os.ReadFile(g.ConfigFilePath)
 	if err != nil {
 		panic(err)
 	}
@@ -37,13 +41,13 @@ var GlobalObject *GlobalObj
 
 func init() {
 	GlobalObject = &GlobalObj{
-		Name:          "earthServerApp",
-		Version:       "v0.4",
-		TcpPort:       8888,
-		Host:          "0:0:0:0",
-		MaxConn:       1000,
-		MaxPacketSize: 4096,
+		Name:           "earthServerApp",
+		Version:        "v0.4",
+		TcpPort:        8888,
+		Host:           "0:0:0:0",
+		MaxConn:        1000,
+		MaxPacketSize:  4096,
+		ConfigFilePath: "config/earnth.json",
 	}
 	GlobalObject.Reload()
-
 }

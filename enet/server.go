@@ -14,12 +14,16 @@ type Server struct {
 	Port      int
 	//当前的Server的消息管理模块
 	msgHandler eiface.IMsgHandler
+	//当前的Server的链接管理器
+	ConnManger eiface.IConnManger
 }
 
 // Start 启动Server
 func (s *Server) Start() {
 	go func() {
 		fmt.Printf("[Start] Server Listener at IP: %s,Port: %d, is starting...\n", s.Ip, s.Port)
+		// 启动worker工作池
+		s.msgHandler.StartWorkerPool()
 		//1.基本服务器开发，获取Tcp的Addr
 		addr, err := net.ResolveTCPAddr(s.IpVersion, fmt.Sprintf("%s:%d", s.Ip, s.Port))
 		if err != nil {
@@ -69,6 +73,9 @@ func (s *Server) AddRouter(msgId uint32, router eiface.IRouter) {
 	s.msgHandler.AddRouter(msgId, router)
 	fmt.Println("Add router success! msgId = ", msgId)
 }
+func (s *Server) GetConnManager() eiface.IConnManger {
+	return s.ConnManger
+}
 
 // NewServer 初始化Server模块方法
 func NewServer() eiface.IServer {
@@ -79,6 +86,7 @@ func NewServer() eiface.IServer {
 		Ip:         utils.GlobalObject.Host,
 		Port:       utils.GlobalObject.TcpPort,
 		msgHandler: NewMsgHandler(),
+		ConnManger: NewConnManager(),
 	}
 
 }
