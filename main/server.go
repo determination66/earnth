@@ -38,8 +38,25 @@ func (hr *HelloEarnthRouter) Handle(request eiface.IRequest) {
 	}
 }
 
+// 创建连接时执行
+func DoConnectionBegin(conn eiface.IConnection) {
+	fmt.Println("DoConnecionBegin is Called ... ")
+	err := conn.SendMsg(2, []byte("DoConnection BEGIN..."))
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+// 连接断开的时候执行
+func DoConnectionLost(conn eiface.IConnection) {
+	fmt.Println("DoConneciotnLost is Called ... ")
+}
+
 func main() {
 	s := enet.NewServer()
+	s.SetOnConnStart(DoConnectionBegin)
+	s.SetOnConnStop(DoConnectionLost)
+
 	s.AddRouter(0, &PingRouter{})
 	s.AddRouter(1, &HelloEarnthRouter{})
 	s.Serve()

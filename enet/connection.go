@@ -123,8 +123,8 @@ func (c *Connection) StartWriter() {
 					return
 				}
 			} else {
-				break
 				fmt.Println("msgBuffChan is Closed")
+				break
 			}
 		case <-c.ExitChan:
 			//conn已经关闭
@@ -140,6 +140,11 @@ func (c *Connection) Start() {
 	go c.StartReader()
 	//2 开启用于写回客户端数据流程的Goroutine
 	go c.StartWriter()
+
+	//==================
+	//按照用户传递进来的创建连接时需要处理的业务，执行钩子方法
+	c.TcpServer.CallOnConnStart(c)
+	//==================
 
 	for {
 		select {
@@ -157,6 +162,11 @@ func (c *Connection) Stop() {
 		return
 	}
 	c.isClose = true
+
+	//==================
+	//如果用户注册了该链接的关闭回调业务，那么在此刻应该显示调用
+	c.TcpServer.CallOnConnStop(c)
+	//==================
 
 	c.Conn.Close()
 	c.ExitChan <- true
