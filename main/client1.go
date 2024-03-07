@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	fmt.Println("client0 Test!!!")
+	fmt.Println("client1 Test!!!")
 	time.Sleep(3 * time.Second)
 
 	conn, err := net.Dial("tcp", "127.0.0.1:8888")

@@ -19,7 +19,7 @@ type Connection struct {
 	isClose bool
 
 	//告知当前连接已经退出
-	ExitBuffChan chan bool
+	ExitChan chan bool
 
 	MsgHandler eiface.IMsgHandler
 
@@ -29,12 +29,12 @@ type Connection struct {
 
 func NewConnection(conn *net.TCPConn, connID uint32, msgHandler eiface.IMsgHandler) *Connection {
 	return &Connection{
-		Conn:         conn,
-		ConnID:       connID,
-		isClose:      false,
-		MsgHandler:   msgHandler,
-		ExitBuffChan: make(chan bool, 1),
-		msgChan:      make(chan []byte),
+		Conn:       conn,
+		ConnID:     connID,
+		isClose:    false,
+		MsgHandler: msgHandler,
+		ExitChan:   make(chan bool, 1),
+		msgChan:    make(chan []byte),
 	}
 }
 
@@ -99,7 +99,7 @@ func (c *Connection) StartWriter() {
 				fmt.Println("Send Data error:, ", err, " Conn Writer exit")
 				return
 			}
-		case <-c.ExitBuffChan:
+		case <-c.ExitChan:
 			//conn已经关闭
 			return
 		}
@@ -116,7 +116,7 @@ func (c *Connection) Start() {
 
 	for {
 		select {
-		case <-c.ExitBuffChan:
+		case <-c.ExitChan:
 			//得到退出消息，不再阻塞
 			return
 		}
@@ -132,7 +132,11 @@ func (c *Connection) Stop() {
 	c.isClose = true
 
 	c.Conn.Close()
-	close(c.ExitBuffChan)
+	c.ExitChan <- true
+
+	//回收资源
+	close(c.ExitChan)
+	close(c.msgChan)
 }
 
 func (c *Connection) GetTcpConnection() *net.TCPConn {
@@ -165,11 +169,5 @@ func (c *Connection) SendMsg(msgId uint32, data []byte) error {
 	}
 	//采用管道共享信息
 	c.msgChan <- binaryMsg
-
-	//if _, err := c.Conn.Write(binaryMsg); err != nil {
-	//	fmt.Println("write msg err,msgId:", msgId)
-	//	return err
-	//}
-
 	return nil
 }
