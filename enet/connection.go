@@ -22,15 +22,18 @@ type Connection struct {
 	ExitBuffChan chan bool
 
 	//该连接处理的方法
-	Router eiface.IRouter
+	//Router eiface.IRouter
+
+	MsgHandler eiface.IMsgHandler
 }
 
-func NewConnection(conn *net.TCPConn, connID uint32, router eiface.IRouter) *Connection {
+func NewConnection(conn *net.TCPConn, connID uint32, msgHandler eiface.IMsgHandler) *Connection {
 	return &Connection{
-		Conn:         conn,
-		ConnID:       connID,
-		isClose:      false,
-		Router:       router,
+		Conn:    conn,
+		ConnID:  connID,
+		isClose: false,
+		//Router:       router,
+		MsgHandler:   msgHandler,
 		ExitBuffChan: make(chan bool, 1),
 	}
 }
@@ -86,17 +89,18 @@ func (c *Connection) StartReader() {
 		//}
 
 		//得到当前客户端请求的Request数据
-		req := Request{
+		req := &Request{
 			conn: c,
 			msg:  msg,
 		}
 		//从路由Routers 中找到注册绑定Conn的对应Handle
-		go func(request eiface.IRequest) {
-			//执行注册的路由方法
-			c.Router.PreHandle(request)
-			c.Router.Handle(request)
-			c.Router.PostHandle(request)
-		}(&req)
+		//go func(request eiface.IRequest) {
+		//	//执行注册的路由方法
+		//	c.Router.PreHandle(request)
+		//	c.Router.Handle(request)
+		//	c.Router.PostHandle(request)
+		//}(&req)
+		go c.MsgHandler.DoMsgHandler(req)
 
 	}
 }

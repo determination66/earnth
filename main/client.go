@@ -43,16 +43,6 @@ func main() {
 			return
 		}
 
-		//buf := make([]byte, 512)
-		//cnt, err := conn.Read(buf)
-		//if err != nil {
-		//	fmt.Println("conn read err:", err)
-		//	return
-		//}
-		//fmt.Println("server call back:", string(buf), ", cnt:", cnt)
-		//
-		//time.Sleep(time.Second)
-
 		//重新获取服务端发送来的内容
 		headData := make([]byte, dp.GetHeadLen())
 		_, err = io.ReadFull(conn, headData) //ReadFull 会把msg填充满为止

@@ -12,8 +12,8 @@ type Server struct {
 	IpVersion string
 	Ip        string
 	Port      int
-	//Server绑定的Router
-	Router eiface.IRouter
+	//当前的Server的消息管理模块
+	msgHandler eiface.IMsgHandler
 }
 
 // Start 启动Server
@@ -46,7 +46,7 @@ func (s *Server) Start() {
 				continue
 			}
 
-			dealConn := NewConnection(conn, cid, s.Router)
+			dealConn := NewConnection(conn, cid, s.msgHandler)
 			cid++
 			go dealConn.Start()
 		}
@@ -65,19 +65,20 @@ func (s *Server) Serve() {
 	select {}
 }
 
-func (s *Server) AddRouter(router eiface.IRouter) {
-	s.Router = router
-	fmt.Println("Add router success!!")
+func (s *Server) AddRouter(msgId uint32, router eiface.IRouter) {
+	s.msgHandler.AddRouter(msgId, router)
+	fmt.Println("Add router success! msgId = ", msgId)
 }
 
 // NewServer 初始化Server模块方法
 func NewServer() eiface.IServer {
+
 	return &Server{
-		Name:      utils.GlobalObject.Name,
-		IpVersion: "tcp4",
-		Ip:        utils.GlobalObject.Host,
-		Port:      utils.GlobalObject.TcpPort,
-		Router:    nil,
+		Name:       utils.GlobalObject.Name,
+		IpVersion:  "tcp4",
+		Ip:         utils.GlobalObject.Host,
+		Port:       utils.GlobalObject.TcpPort,
+		msgHandler: NewMsgHandler(),
 	}
 
 }
