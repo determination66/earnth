@@ -139,11 +139,14 @@ func (c *Connection) Send(data []byte) error {
 
 func (c *Connection) SendMsg(msgId uint32, data []byte) error {
 	if c.isClose {
-		return errors.New("Connection closed when send msg")
+		return errors.New("connection closed when send msg")
 	}
 	dp := NewDataPack()
 
 	binaryMsg, err := dp.Pack(NewMsgPackage(msgId, data))
+	//if string(binaryMsg) == "123456123456" {
+	//	fmt.Println("错误！！！！！！")
+	//}
 	if err != nil {
 		fmt.Println("Pack error msgId:", err)
 		return err
