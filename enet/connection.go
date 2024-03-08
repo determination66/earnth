@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"sync"
 )
 
 type Connection struct {
@@ -31,6 +32,11 @@ type Connection struct {
 	msgChan chan []byte
 	//有缓冲的管道，用于读写两个goroutine之间的通信
 	msgBuffChan chan []byte
+
+	//链接属性
+	property map[string]interface{}
+	//保护链接属性修改的锁
+	propertyLock sync.RWMutex
 }
 
 func NewConnection(server eiface.IServer, conn *net.TCPConn, connID uint32, msgHandler eiface.IMsgHandler) *Connection {
@@ -43,6 +49,7 @@ func NewConnection(server eiface.IServer, conn *net.TCPConn, connID uint32, msgH
 		ExitChan:    make(chan bool, 1),
 		msgChan:     make(chan []byte),
 		msgBuffChan: make(chan []byte, utils.GlobalObject.MaxMsgChanLen),
+		property:    make(map[string]interface{}), //对链接属性map初始化
 	}
 	//添加到链接管理当中
 	c.TcpServer.GetConnManager().Add(c)
@@ -140,11 +147,8 @@ func (c *Connection) Start() {
 	go c.StartReader()
 	//2 开启用于写回客户端数据流程的Goroutine
 	go c.StartWriter()
-
-	//==================
 	//按照用户传递进来的创建连接时需要处理的业务，执行钩子方法
 	c.TcpServer.CallOnConnStart(c)
-	//==================
 
 	for {
 		select {
@@ -163,10 +167,8 @@ func (c *Connection) Stop() {
 	}
 	c.isClose = true
 
-	//==================
 	//如果用户注册了该链接的关闭回调业务，那么在此刻应该显示调用
 	c.TcpServer.CallOnConnStop(c)
-	//==================
 
 	c.Conn.Close()
 	c.ExitChan <- true
@@ -227,4 +229,32 @@ func (c *Connection) SendBuffMsg(msgId uint32, data []byte) error {
 	c.msgBuffChan <- msg
 
 	return nil
+}
+
+// SetProperty 设置链接属性
+func (c *Connection) SetProperty(key string, value interface{}) {
+	c.propertyLock.Lock()
+	defer c.propertyLock.Unlock()
+
+	c.property[key] = value
+}
+
+// GetProperty 获取链接属性
+func (c *Connection) GetProperty(key string) (interface{}, error) {
+	c.propertyLock.RLock()
+	defer c.propertyLock.RUnlock()
+
+	if value, ok := c.property[key]; ok {
+		return value, nil
+	} else {
+		return nil, errors.New("no property found")
+	}
+}
+
+// RemoveProperty 移除链接属性
+func (c *Connection) RemoveProperty(key string) {
+	c.propertyLock.Lock()
+	defer c.propertyLock.Unlock()
+
+	delete(c.property, key)
 }

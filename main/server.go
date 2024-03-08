@@ -41,6 +41,11 @@ func (hr *HelloEarnthRouter) Handle(request eiface.IRequest) {
 // DoConnectionBegin 创建连接时执行
 func DoConnectionBegin(conn eiface.IConnection) {
 	fmt.Println("DoConnectionBegin is Called ... ")
+	//设置链接器
+	fmt.Println("Set conn Name, Home done!")
+	conn.SetProperty("Name", "Aceld")
+	conn.SetProperty("Home", "https://www.jianshu.com/u/35261429b7f1")
+
 	err := conn.SendMsg(2, []byte("DoConnection BEGIN..."))
 	if err != nil {
 		fmt.Println(err)
@@ -49,6 +54,14 @@ func DoConnectionBegin(conn eiface.IConnection) {
 
 // DoConnectionLost 连接断开的时候执行
 func DoConnectionLost(conn eiface.IConnection) {
+	//在连接销毁之前，查询conn的Name，Home属性
+	if name, err := conn.GetProperty("Name"); err == nil {
+		fmt.Println("Conn Property Name = ", name)
+	}
+
+	if home, err := conn.GetProperty("Home"); err == nil {
+		fmt.Println("Conn Property Home = ", home)
+	}
 	fmt.Println("DoConnectionLost is Called ... ")
 }
 
