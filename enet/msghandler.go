@@ -34,11 +34,11 @@ func (mh *MsgHandler) DoMsgHandler(request eiface.IRequest) {
 	handler.PreHandle(request)
 	handler.Handle(request)
 	handler.PostHandle(request)
-
 }
 
 // AddRouter 为消息添加具体的逻辑
 func (mh *MsgHandler) AddRouter(msgId uint32, router eiface.IRouter) {
+	// 添加重复
 	if _, ok := mh.Apis[msgId]; ok {
 		panic("repeated api , msgId = " + strconv.Itoa(int(msgId)))
 	}

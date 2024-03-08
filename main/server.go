@@ -14,7 +14,7 @@ type PingRouter struct {
 func (pr *PingRouter) Handle(request eiface.IRequest) {
 	fmt.Println("Call PingRouter Handle")
 	//先读取客户端的数据，再回写ping...ping...ping
-	fmt.Println("PingRouter recv from client : msgId=", request.GetMsgID(), ", data=", string(request.GetData()))
+	fmt.Println("PingRouter rev from client : msgId=", request.GetMsgID(), ", data=", string(request.GetData()))
 
 	//回写数据
 	err := request.GetConnection().SendMsg(0, []byte("123456"))
@@ -28,28 +28,28 @@ type HelloEarnthRouter struct {
 }
 
 func (hr *HelloEarnthRouter) Handle(request eiface.IRequest) {
-	fmt.Println("Call HelloZinxRouter Handle")
+	fmt.Println("Call HelloEarnthRouter Handle")
 	//先读取客户端的数据，再回写ping...ping...ping
 	fmt.Println("HelloEarnthRouter recv from client : msgId=", request.GetMsgID(), ", data=", string(request.GetData()))
 
-	err := request.GetConnection().SendMsg(1, []byte("Hello Zinx Router V0.6"))
+	err := request.GetConnection().SendMsg(1, []byte("Hello Earnth Router V0.6"))
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
-// 创建连接时执行
+// DoConnectionBegin 创建连接时执行
 func DoConnectionBegin(conn eiface.IConnection) {
-	fmt.Println("DoConnecionBegin is Called ... ")
+	fmt.Println("DoConnectionBegin is Called ... ")
 	err := conn.SendMsg(2, []byte("DoConnection BEGIN..."))
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
-// 连接断开的时候执行
+// DoConnectionLost 连接断开的时候执行
 func DoConnectionLost(conn eiface.IConnection) {
-	fmt.Println("DoConneciotnLost is Called ... ")
+	fmt.Println("DoConnectionLost is Called ... ")
 }
 
 func main() {

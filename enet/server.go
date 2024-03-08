@@ -17,14 +17,14 @@ type Server struct {
 	//当前的Server的链接管理器
 	ConnManger eiface.IConnManger
 
-	// =======================
 	//新增两个hook函数原型
 	//该Server的连接创建时Hook函数
 	OnConnStart func(conn eiface.IConnection)
 	//该Server的连接断开时的Hook函数
 	OnConnStop func(conn eiface.IConnection)
-	// =======================
 }
+
+//对Server链接的创建和断开后进行个性化的处理
 
 func (s *Server) SetOnConnStart(f func(eiface.IConnection)) {
 	s.OnConnStart = f
@@ -117,6 +117,7 @@ func (s *Server) AddRouter(msgId uint32, router eiface.IRouter) {
 	s.msgHandler.AddRouter(msgId, router)
 	fmt.Println("Add router success! msgId = ", msgId)
 }
+
 func (s *Server) GetConnManager() eiface.IConnManger {
 	return s.ConnManger
 }
