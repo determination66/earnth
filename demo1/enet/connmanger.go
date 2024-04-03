@@ -1,7 +1,7 @@
 package enet
 
 import (
-	"earnth/eiface"
+	"earnth/demo1/eiface"
 	"errors"
 	"fmt"
 	"sync"

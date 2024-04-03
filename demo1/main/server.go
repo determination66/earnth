@@ -1,8 +1,8 @@
 package main
 
 import (
-	"earnth/eiface"
-	"earnth/enet"
+	"earnth/demo1/eiface"
+	"earnth/demo1/enet"
 	"fmt"
 )
 

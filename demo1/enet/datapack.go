@@ -2,8 +2,8 @@ package enet
 
 import (
 	"bytes"
-	"earnth/eiface"
-	"earnth/utils"
+	"earnth/demo1/eiface"
+	"earnth/demo1/utils"
 	"encoding/binary"
 	"errors"
 )

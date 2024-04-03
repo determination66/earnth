@@ -1,6 +1,6 @@
 package enet
 
-import "earnth/eiface"
+import "earnth/demo1/eiface"
 
 type Request struct {
 	//已经和客户端建立好的连接

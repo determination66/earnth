@@ -1,7 +1,7 @@
 package main
 
 import (
-	"earnth/enet"
+	"earnth/demo1/enet"
 	"fmt"
 	"io"
 	"net"

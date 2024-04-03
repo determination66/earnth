@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"earnth/eiface"
+	"earnth/demo1/eiface"
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"os"
@@ -52,7 +52,7 @@ func init() {
 		Host:           "0.0.0.0",
 		MaxConn:        1000,
 		MaxPacketSize:  4096,
-		ConfigFilePath: "config/earnth.yaml",
+		ConfigFilePath: "demo1/config/earnth.yaml",
 	}
 	GlobalObject.Reload()
 }
