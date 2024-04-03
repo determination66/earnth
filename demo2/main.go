@@ -2,24 +2,25 @@ package main
 
 import (
 	"earnth/demo2/gee"
-	"fmt"
 	"net/http"
 )
 
 func main() {
-
-	r := gee.NewEngine()
-
-	r.GET("/", func(writer http.ResponseWriter, request *http.Request) {
-		fmt.Fprintf(writer, "URL.Path=%q\n", request.URL.Path)
+	r := gee.New()
+	r.GET("/", func(c *gee.Context) {
+		c.HTML(http.StatusOK, "<h1>Hello Gee</h1>")
+	})
+	r.GET("/hello", func(c *gee.Context) {
+		// expect /hello?name=geektutu
+		c.String(http.StatusOK, "hello %s, you're at %s\n", c.Query("name"), c.Path)
 	})
 
-	r.GET("/hello", func(w http.ResponseWriter, req *http.Request) {
-		for k, v := range req.Header {
-			fmt.Fprintf(w, "Header[%q] = %q\n", k, v)
-		}
+	r.POST("/login", func(c *gee.Context) {
+		c.JSON(http.StatusOK, gee.H{
+			"username": c.PostForm("username"),
+			"password": c.PostForm("password"),
+		})
 	})
 
 	r.Run(":9999")
-
 }
