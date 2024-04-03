@@ -51,13 +51,16 @@ func (c *Context) String(code int, format string, values ...interface{}) {
 	c.Writer.Write([]byte(fmt.Sprintf(format, values...)))
 }
 
-// todo 这一块暂时出现bug
+// JSON 采用panic修复bug
 func (c *Context) JSON(code int, obj interface{}) {
 	c.SetHeader("Content-Type", "application/json")
 	c.Status(code)
+
 	encoder := json.NewEncoder(c.Writer)
 	if err := encoder.Encode(obj); err != nil {
-		http.Error(c.Writer, err.Error(), 500)
+		panic(err)
+		//http.Error(c.Writer, err.Error(), 500)
+		//return
 	}
 }
 

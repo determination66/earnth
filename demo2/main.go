@@ -17,6 +17,7 @@ func main() {
 
 	r.POST("/login", func(c *gee.Context) {
 		c.JSON(http.StatusOK, gee.H{
+			"nihao":    123,
 			"username": c.PostForm("username"),
 			"password": c.PostForm("password"),
 		})
