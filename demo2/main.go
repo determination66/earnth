@@ -2,34 +2,49 @@ package main
 
 import (
 	"earnth/demo2/gee"
-	"log"
+	"fmt"
+	"html/template"
 	"net/http"
 	"time"
 )
 
-func onlyForV2() gee.HandlerFunc {
-	return func(c *gee.Context) {
-		// Start timer
-		t := time.Now()
-		// if a server error occurred
-		//c.Fail(500, "Internal Server Error")
-		// Calculate resolution time
-		log.Printf("----------[%d] %s in %v for group v2\n", c.StatusCode, c.Req.RequestURI, time.Since(t))
-	}
+//func onlyForV2() gee.HandlerFunc {
+//	return func(c *gee.Context) {
+//		// Start timer
+//		t := time.Now()
+//		// if a server error occurred
+//		//c.Fail(500, "Internal Server Error")
+//		// Calculate resolution time
+//		log.Printf("----------[%d] %s in %v for group v2\n", c.StatusCode, c.Req.RequestURI, time.Since(t))
+//	}
+//}
+
+func FormatAsDate(t time.Time) string {
+	year, month, day := t.Date()
+	return fmt.Sprintf("%d-%02d-%02d", year, month, day)
 }
 
 func main() {
 	r := gee.New()
-	r.Use(onlyForV2())
+	r.Use(gee.Logger())
 	// 文件映射
 	r.Static("/assets", "./demo2/static")
 	r.GET("/index", func(c *gee.Context) {
-		c.HTML(http.StatusOK, "<h1>Index Page</h1>")
+		c.HTMLString(http.StatusOK, "<h1>Index Page</h1>")
 	})
+
+	r.SetFuncMap(template.FuncMap{
+		"FormatAsDate": FormatAsDate,
+	})
+	r.LoadHTMLGlob("./demo2/templates/*")
+	r.GET("/", func(c *gee.Context) {
+		c.HTMLTemplate(http.StatusOK, "css.tmpl", nil)
+	})
+
 	v1 := r.Group("/v1")
 	{
 		v1.GET("/", func(c *gee.Context) {
-			c.HTML(http.StatusOK, "<h1>Hello Gee</h1>")
+			c.HTMLString(http.StatusOK, "<h1>Hello Gee</h1>")
 		})
 
 		v1.GET("/hello", func(c *gee.Context) {
@@ -53,7 +68,7 @@ func main() {
 	}
 
 	v1.GET("/hhh", func(c *gee.Context) {
-		c.HTML(http.StatusOK, "<h1>Hello Gee</h1>")
+		c.HTMLString(http.StatusOK, "<h1>Hello Gee</h1>")
 	})
 
 	r.Run(":9999")
