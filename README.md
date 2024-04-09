@@ -2,3 +2,7 @@
 > - 仓库地址: https://gitee.com/determination66/earnth
 > - 简易go web框架的调研: https://www.kdocs.cn/l/cm4wvF5iq20x
 > - go web小白之路: https://www.kdocs.cn/l/cqmUIDERGRa1
+
+## 文件夹目录
+demo1 为一个轻量级的TCP框架
+demo2 为仿照gin模式编写的一个HTTP框架

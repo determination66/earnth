@@ -21,7 +21,7 @@ func main() {
 			c.String(http.StatusOK, "hello %s, you're at %s\n", c.Query("name"), c.Path)
 		})
 	}
-	v2 := r.Group("/v2")
+	v2 := v1.Group("/v2")
 	{
 		v2.GET("/hello/:name", func(c *gee.Context) {
 			// expect /hello/geektutu
