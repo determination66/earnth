@@ -25,12 +25,18 @@ func FormatAsDate(t time.Time) string {
 }
 
 func main() {
-	r := gee.New()
-	r.Use(gee.Logger())
+	//r := gee.New()
+	r := gee.Default()
+	//r.Use(gee.Logger())
 	// 文件映射
 	r.Static("/assets", "./demo2/static")
 	r.GET("/index", func(c *gee.Context) {
 		c.HTMLString(http.StatusOK, "<h1>Index Page</h1>")
+	})
+
+	r.GET("/panic", func(c *gee.Context) {
+		names := []string{"geektutu"}
+		c.String(http.StatusOK, names[100])
 	})
 
 	r.SetFuncMap(template.FuncMap{
