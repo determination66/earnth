@@ -14,13 +14,15 @@ func onlyForV2() gee.HandlerFunc {
 		// if a server error occurred
 		//c.Fail(500, "Internal Server Error")
 		// Calculate resolution time
-		log.Printf("----------[%d] %s in %v for group v2", c.StatusCode, c.Req.RequestURI, time.Since(t))
+		log.Printf("----------[%d] %s in %v for group v2\n", c.StatusCode, c.Req.RequestURI, time.Since(t))
 	}
 }
 
 func main() {
 	r := gee.New()
 	r.Use(onlyForV2())
+	// 文件映射
+	r.Static("/assets", "./demo2/static")
 	r.GET("/index", func(c *gee.Context) {
 		c.HTML(http.StatusOK, "<h1>Index Page</h1>")
 	})
