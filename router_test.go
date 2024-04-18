@@ -1,9 +1,7 @@
 package earnth
 
 import (
-	"fmt"
 	"net/http"
-	"reflect"
 	"testing"
 )
 
@@ -34,7 +32,7 @@ func TestAddRoute(t *testing.T) {
 
 }
 
-func TestRouter_match(T *testing.T) {
+func TestRouter_match(t *testing.T) {
 	r := newRouter()
 	var mockHandler HandleFunc = func() {}
 	// 添加一些路由
@@ -61,7 +59,7 @@ func TestRouter_match(T *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		T.Run(tc.name, func(t *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			actual := r.match(tc.method, tc.path)
 			if actual != tc.expected {
 				t.Errorf("expected %v, got %v", tc.expected, actual)
@@ -70,42 +68,33 @@ func TestRouter_match(T *testing.T) {
 	}
 }
 
-func (r *router) equal(y *router) (string, bool) {
-	for k, v := range r.trees {
-		dst, ok := y.trees[k]
-		if !ok {
-			return fmt.Sprintf("找不到对应的 http method"), false
-		}
-		msg, equal := v.equal(dst)
-		if !equal {
-			return msg, false
-		}
-	}
-	return "", true
-}
+func TestRouter_IsEqual(t *testing.T) {
+	r1 := newRouter()
+	r2 := newRouter()
 
-func (n *node) equal(y *node) (string, bool) {
-	if n.path != y.path {
-		return "path不相等", false
+	var mockHandler HandleFunc = func() {}
+
+	// 添加一些路由到 r1
+	r1.AddRoute("GET", "/user", mockHandler)
+	r1.AddRoute("POST", "/order", mockHandler)
+
+	// 添加相同的路由到 r2
+	r2.AddRoute("GET", "/user", mockHandler)
+	r2.AddRoute("POST", "/order", mockHandler)
+
+	//添加不同的路由到 r2
+	r2.AddRoute("PUT", "/product", mockHandler)
+
+	// 检查相等的情况
+	if !r1.isEqual(r2) {
+		t.Errorf("Expected r1 and r2 to be equal")
 	}
 
-	if len(n.children) != len(y.children) {
-		return "children数目不相等", false
+	// 删除 r2 中的一个路由
+	delete(r2.trees, "PUT")
+
+	// 检查不相等的情况
+	if r1.isEqual(r2) {
+		t.Errorf("Expected r1 and r2 to be different")
 	}
-	nHandler := reflect.ValueOf(n)
-	yHandler := reflect.ValueOf(y)
-	if nHandler != yHandler {
-		return "Handler不相等", false
-	}
-	for path, c := range n.children {
-		dst, ok := y.children[path]
-		if !ok {
-			return fmt.Sprintf("子节点 %s 不存在", path), false
-		}
-		msg, ok := c.equal(dst)
-		if !ok {
-			return msg, false
-		}
-	}
-	return "", true
 }

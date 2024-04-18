@@ -1,7 +1,6 @@
 package earnth
 
 import (
-	"fmt"
 	"net"
 	"net/http"
 )
@@ -18,6 +17,7 @@ type Server interface {
 	AddRoute(method string, path string, handleFunc HandleFunc)
 }
 
+// HTTPServer This is the earnth's Engine. It exposes all the interfaces for users.
 type HTTPServer struct {
 	router
 }
@@ -38,10 +38,6 @@ func (H *HTTPServer) Start(addr string) error {
 		return err
 	}
 	return http.Serve(ln, H)
-}
-
-func (H *HTTPServer) AddRoute(method string, path string, handleFunc HandleFunc) {
-	fmt.Println("add route method:", method, "path:", path)
 }
 
 func (H *HTTPServer) Get(path string, handleFunc HandleFunc) {

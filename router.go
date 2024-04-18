@@ -73,6 +73,22 @@ func (r *router) match(method, path string) *node {
 	return current
 }
 
+func (r *router) isEqual(y *router) bool {
+	if len(r.trees) != len(y.trees) {
+		return false
+	}
+	for method, root := range r.trees {
+		dst, ok := y.trees[method]
+		if !ok {
+			return false
+		}
+		if !root.isEqual(dst) {
+			return false
+		}
+	}
+	return true
+}
+
 type node struct {
 	path     string
 	children map[string]*node
@@ -93,4 +109,30 @@ func (n *node) childOrCreate(seg string) *node {
 		n.children[seg] = res
 	}
 	return res
+}
+
+func (n *node) isEqual(y *node) bool {
+	if n == nil && y == nil {
+		return true
+	}
+	if n == nil || y == nil {
+		return false
+	}
+	if n.path != y.path {
+		return false
+	}
+	if len(n.children) != len(y.children) {
+		return false
+	}
+
+	for key, child := range n.children {
+		dst, ok := y.children[key]
+		if !ok {
+			return false
+		}
+		if !child.isEqual(dst) {
+			return false
+		}
+	}
+	return true
 }
