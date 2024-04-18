@@ -21,7 +21,7 @@ func TestAddRoute(t *testing.T) {
 		{"index7", http.MethodGet, "/index"}, // Added index test case
 	}
 
-	var mockHandler HandleFunc = func() {}
+	var mockHandler HandleFunc = func(ctx *Context) {}
 	r := newRouter()
 
 	for _, tc := range testCases {
@@ -34,7 +34,7 @@ func TestAddRoute(t *testing.T) {
 
 func TestRouter_match(t *testing.T) {
 	r := newRouter()
-	var mockHandler HandleFunc = func() {}
+	var mockHandler HandleFunc = func(ctx *Context) {}
 	// 添加一些路由
 	r.AddRoute(http.MethodGet, "/user", mockHandler)
 	r.AddRoute(http.MethodGet, "/", mockHandler)
@@ -72,7 +72,7 @@ func TestRouter_IsEqual(t *testing.T) {
 	r1 := newRouter()
 	r2 := newRouter()
 
-	var mockHandler HandleFunc = func() {}
+	var mockHandler HandleFunc = func(ctx *Context) {}
 
 	// 添加一些路由到 r1
 	r1.AddRoute("GET", "/user", mockHandler)

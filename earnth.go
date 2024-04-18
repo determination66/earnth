@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-type HandleFunc func()
+type HandleFunc func(ctx *Context)
 
 var _ Server = &HTTPServer{}
 
