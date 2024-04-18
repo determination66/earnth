@@ -1,7 +1,0 @@
-Name: "Earnth-V0.9"
-Host: "127.0.0.1"
-TcpPort: 8888
-MaxConn: 3
-WorkerPoolSize: 6
-MaxWorkerTaskLen: 1
-MaxMsgChanLen: 3

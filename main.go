@@ -1,7 +1,7 @@
 package main
 
 import (
-	"earnth/demo2/gee"
+	"earnth/gee"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -29,7 +29,7 @@ func main() {
 	r := gee.Default()
 	//r.Use(gee.Logger())
 	// 文件映射
-	r.Static("/assets", "./demo2/static")
+	r.Static("/assets", "./static")
 	r.GET("/index", func(c *gee.Context) {
 		c.HTMLString(http.StatusOK, "<h1>Index Page</h1>")
 	})
@@ -42,7 +42,7 @@ func main() {
 	r.SetFuncMap(template.FuncMap{
 		"FormatAsDate": FormatAsDate,
 	})
-	r.LoadHTMLGlob("./demo2/templates/*")
+	r.LoadHTMLGlob("./templates/*")
 	r.GET("/", func(c *gee.Context) {
 		c.HTMLTemplate(http.StatusOK, "css.tmpl", nil)
 	})
