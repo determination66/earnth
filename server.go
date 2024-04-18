@@ -19,6 +19,7 @@ type Server interface {
 }
 
 type HTTPServer struct {
+	router
 }
 
 func NewHTTPServer() *HTTPServer {
