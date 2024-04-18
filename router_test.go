@@ -23,16 +23,17 @@ func TestAddRoute(t *testing.T) {
 		{"index7", http.MethodGet, "/index"}, // Added index test case
 	}
 
-	//var mockHandler HandleFunc = func() {}
-	//r := newRouter()
+	var mockHandler HandleFunc = func() {}
+	r := newRouter()
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// 逻辑代码
+			r.AddRoute(tc.method, tc.path, mockHandler)
 		})
-
 	}
+	fmt.Println(r)
 }
+
 func (r *router) equal(y *router) (string, bool) {
 	for k, v := range r.trees {
 		dst, ok := y.trees[k]
