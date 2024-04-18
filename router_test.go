@@ -31,7 +31,43 @@ func TestAddRoute(t *testing.T) {
 			r.AddRoute(tc.method, tc.path, mockHandler)
 		})
 	}
-	fmt.Println(r)
+
+}
+
+func TestRouter_match(T *testing.T) {
+	r := newRouter()
+	var mockHandler HandleFunc = func() {}
+	// 添加一些路由
+	r.AddRoute(http.MethodGet, "/user", mockHandler)
+	r.AddRoute(http.MethodGet, "/", mockHandler)
+	r.AddRoute(http.MethodGet, "/user/home", mockHandler)
+	r.AddRoute(http.MethodGet, "/order/detail", mockHandler)
+	r.AddRoute(http.MethodPost, "/order/create", mockHandler)
+	r.AddRoute(http.MethodPost, "/login", mockHandler)
+	r.AddRoute(http.MethodGet, "/index", mockHandler)
+
+	testCases := []struct {
+		name     string
+		method   string
+		path     string
+		expected *node // 期望匹配的节点
+	}{
+		{"existing route", http.MethodGet, "/user", r.trees[http.MethodGet].children["user"]},
+		{"root route", http.MethodGet, "/", r.trees[http.MethodGet]},
+		{"nested route", http.MethodGet, "/user/home", r.trees[http.MethodGet].children["user"].children["home"]},
+		{"non-existing route", http.MethodGet, "/notfound", nil},
+		{"existing route with params", http.MethodGet, "/index", r.trees[http.MethodGet].children["index"]},
+		{"non-existing method", http.MethodPut, "/user", nil},
+	}
+
+	for _, tc := range testCases {
+		T.Run(tc.name, func(t *testing.T) {
+			actual := r.match(tc.method, tc.path)
+			if actual != tc.expected {
+				t.Errorf("expected %v, got %v", tc.expected, actual)
+			}
+		})
+	}
 }
 
 func (r *router) equal(y *router) (string, bool) {

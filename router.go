@@ -53,6 +53,33 @@ func (r *router) AddRoute(method string, path string, handleFunc HandleFunc) {
 	//root.handler = handler
 }
 
+func (r *router) match(method, path string) *node {
+	root, ok := r.trees[method]
+	if !ok {
+		return nil
+	}
+	if path == "/" {
+		return root
+	}
+	current := root
+	units := strings.Split(path[1:], "/")
+	for _, unit := range units {
+		next, ok := current.children[unit]
+		if !ok {
+			return nil
+		}
+		current = next
+	}
+	return current
+}
+
+type node struct {
+	path     string
+	children map[string]*node
+
+	handler HandleFunc
+}
+
 func (n *node) childOrCreate(seg string) *node {
 	if n.children == nil {
 		n.children = map[string]*node{}
@@ -66,11 +93,4 @@ func (n *node) childOrCreate(seg string) *node {
 		n.children[seg] = res
 	}
 	return res
-}
-
-type node struct {
-	path     string
-	children map[string]*node
-
-	handler HandleFunc
 }
