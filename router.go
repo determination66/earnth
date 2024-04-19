@@ -38,22 +38,23 @@ func (r *router) AddRoute(method string, path string, handleFunc HandleFunc) {
 		return
 	}
 
-	segs := strings.Split(path[1:], "/")
+	secs := strings.Split(path[1:], "/")
 
-	for _, seg := range segs {
+	for _, seg := range secs {
 		if seg == "" {
 			panic("web: 不能有连续的 /")
 		}
 		child := root.childOrCreate(seg)
 		root = child
 	}
-	//if root.handler != nil {
-	//	panic(fmt.Sprintf("web: 路由冲突，重复注册[%s]"))
-	//}
-	//root.handler = handler
+	if root.handler != nil {
+		panic(fmt.Sprintf("web: 路由冲突，重复注册[%s]", path))
+	}
+	root.handler = handleFunc
+	fmt.Println("add", method, path)
 }
 
-func (r *router) match(method, path string) *node {
+func (r *router) matchRouter(method, path string) *node {
 	root, ok := r.trees[method]
 	if !ok {
 		return nil

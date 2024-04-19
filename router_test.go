@@ -60,7 +60,7 @@ func TestRouter_match(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			actual := r.match(tc.method, tc.path)
+			actual := r.matchRouter(tc.method, tc.path)
 			if actual != tc.expected {
 				t.Errorf("expected %v, got %v", tc.expected, actual)
 			}
