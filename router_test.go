@@ -43,6 +43,8 @@ func TestRouter_match(t *testing.T) {
 	r.AddRoute(http.MethodPost, "/order/create", mockHandler)
 	r.AddRoute(http.MethodPost, "/login", mockHandler)
 	r.AddRoute(http.MethodGet, "/index", mockHandler)
+	r.AddRoute(http.MethodGet, "/index/*", mockHandler)
+	r.AddRoute(http.MethodGet, "/index/*/add", mockHandler)
 
 	testCases := []struct {
 		name     string

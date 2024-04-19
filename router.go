@@ -56,6 +56,7 @@ func (r *router) AddRoute(method string, path string, handleFunc HandleFunc) {
 	fmt.Println("add", method, path)
 }
 
+// static routers first, then dynamic routers
 func (r *router) matchRouter(method, path string) *node {
 	root, ok := r.trees[method]
 	if !ok {
@@ -69,6 +70,10 @@ func (r *router) matchRouter(method, path string) *node {
 	for _, unit := range units {
 		next, ok := current.children[unit]
 		if !ok {
+			//tey to find the dynamic child
+			if current.dynamicChild != nil {
+				current = current.dynamicChild
+			}
 			return nil
 		}
 		current = next
@@ -93,13 +98,24 @@ func (r *router) isEqual(y *router) bool {
 }
 
 type node struct {
-	path     string
+	path string
+	// static router match
 	children map[string]*node
+
+	//dynamic router node ,to parse '*'
+	dynamicChild *node
 
 	handler HandleFunc
 }
 
 func (n *node) childOrCreate(seg string) *node {
+	// special process the '*'
+	if seg == "*" {
+		n.dynamicChild = &node{
+			path: seg,
+		}
+		return n.dynamicChild
+	}
 	if n.children == nil {
 		n.children = map[string]*node{}
 	}
