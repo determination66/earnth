@@ -45,6 +45,8 @@ func TestRouter_match(t *testing.T) {
 	r.AddRoute(http.MethodGet, "/index", mockHandler)
 	r.AddRoute(http.MethodGet, "/index/*", mockHandler)
 	r.AddRoute(http.MethodGet, "/index/*/add", mockHandler)
+	r.AddRoute(http.MethodGet, "/index/:name/add", mockHandler)
+	r.AddRoute(http.MethodGet, "/index/:detail/del", mockHandler)
 
 	testCases := []struct {
 		name     string

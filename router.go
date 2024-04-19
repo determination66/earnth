@@ -30,7 +30,6 @@ func (r *router) AddRoute(method string, path string, handleFunc HandleFunc) {
 	}
 
 	if path == "/" {
-		// 根节点重复注册
 		if root.handler != nil {
 			panic("web: router already has a handler[/]")
 		}
@@ -42,21 +41,21 @@ func (r *router) AddRoute(method string, path string, handleFunc HandleFunc) {
 
 	for _, seg := range secs {
 		if seg == "" {
-			//panic("web: 不能有连续的 /")
 			panic(fmt.Sprintf("Routes cannot have consecutive '/'"))
 		}
+		// This is important
 		child := root.childOrCreate(seg)
 		root = child
 	}
 	if root.handler != nil {
-		panic(fmt.Sprintf("The routes conflict, "+
-			"duplicate registration: [method:%s path:%s]", method, path))
+		panic(fmt.Sprintf("Duplicate router: [method:%s path:%s]", method, path))
 	}
 	root.handler = handleFunc
 	fmt.Println("add", method, path)
 }
 
 // static routers first, then dynamic routers
+// static (/user/abc) --> colon (/user/:name) --> wildcard (/user/*)
 func (r *router) matchRouter(method, path string) *node {
 	root, ok := r.trees[method]
 	if !ok {
@@ -65,20 +64,90 @@ func (r *router) matchRouter(method, path string) *node {
 	if path == "/" {
 		return root
 	}
-	current := root
+	cur := root
 	units := strings.Split(path[1:], "/")
+
 	for _, unit := range units {
-		next, ok := current.children[unit]
+		next, ok := cur.children[unit]
+		// can't find the exact match
 		if !ok {
-			//tey to find the dynamic child
-			if current.dynamicChild != nil {
-				current = current.dynamicChild
+			// try to find the colon child
+			if cur.handler != nil {
+				// todo need to fix
+
+				cur = cur.colonChild
+
+			} else {
+				//tey to find the wildcard child
+				if cur.wildcardChild != nil {
+					cur = cur.wildcardChild
+				}
 			}
 			return nil
 		}
-		current = next
+		cur = next
 	}
-	return current
+	return cur
+}
+
+type node struct {
+	path string
+	// static router match
+	children map[string]*node
+
+	//wildcard router node ,to parse '*'
+	wildcardChild *node
+
+	//colon router node ,to parse ":name"
+	colonChild *node
+	//paramsChild *ParamNode
+
+	handler HandleFunc
+}
+
+// ParamNode router node ,to parse ":name"
+//type ParamNode struct {
+//	name string //parameter name
+//	n    *node
+//}
+
+// ParamInfo for the dynamic Params
+type ParamInfo struct {
+	pathParams map[string]string
+	n          *node
+}
+
+// static (/user/abc) --> colon (/user/:name) --> wildcard (/user/*)
+func (n *node) childOrCreate(seg string) *node {
+	// special process the ":name"
+	if seg[0] == ':' {
+		if n.colonChild == nil {
+			n.colonChild = &node{
+				path: seg[1:],
+			}
+			return n.colonChild
+		}
+		return n.colonChild
+	}
+	// special process the '*'
+	if seg == "*" {
+		n.wildcardChild = &node{
+			path: seg,
+		}
+		return n.wildcardChild
+	}
+	if n.children == nil {
+		n.children = map[string]*node{}
+	}
+
+	res, ok := n.children[seg]
+	if !ok {
+		res = &node{
+			path: seg,
+		}
+		n.children[seg] = res
+	}
+	return res
 }
 
 func (r *router) isEqual(y *router) bool {
@@ -95,39 +164,6 @@ func (r *router) isEqual(y *router) bool {
 		}
 	}
 	return true
-}
-
-type node struct {
-	path string
-	// static router match
-	children map[string]*node
-
-	//dynamic router node ,to parse '*'
-	dynamicChild *node
-
-	handler HandleFunc
-}
-
-func (n *node) childOrCreate(seg string) *node {
-	// special process the '*'
-	if seg == "*" {
-		n.dynamicChild = &node{
-			path: seg,
-		}
-		return n.dynamicChild
-	}
-	if n.children == nil {
-		n.children = map[string]*node{}
-	}
-
-	res, ok := n.children[seg]
-	if !ok {
-		res = &node{
-			path: seg,
-		}
-		n.children[seg] = res
-	}
-	return res
 }
 
 func (n *node) isEqual(y *node) bool {

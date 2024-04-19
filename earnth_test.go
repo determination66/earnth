@@ -9,9 +9,13 @@ func TestServer(T *testing.T) {
 	s := NewHTTPServer()
 	//fmt.Println(s)
 
-	s.Get("/user", func(ctx *Context) {
+	s.Get("/user/*", func(ctx *Context) {
 		fmt.Println("hello world")
 	})
+	s.Get("/user/*", func(ctx *Context) {
+		fmt.Println("hello world")
+	})
+
 	s.Get("/", func(ctx *Context) {
 		fmt.Println("/")
 	})
