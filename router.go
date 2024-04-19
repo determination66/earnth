@@ -42,13 +42,15 @@ func (r *router) AddRoute(method string, path string, handleFunc HandleFunc) {
 
 	for _, seg := range secs {
 		if seg == "" {
-			panic("web: 不能有连续的 /")
+			//panic("web: 不能有连续的 /")
+			panic(fmt.Sprintf("Routes cannot have consecutive '/'"))
 		}
 		child := root.childOrCreate(seg)
 		root = child
 	}
 	if root.handler != nil {
-		panic(fmt.Sprintf("web: 路由冲突，重复注册[%s]", path))
+		panic(fmt.Sprintf("The routes conflict, "+
+			"duplicate registration: [method:%s path:%s]", method, path))
 	}
 	root.handler = handleFunc
 	fmt.Println("add", method, path)
