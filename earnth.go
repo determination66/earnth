@@ -37,8 +37,8 @@ func (H *HTTPServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	//	Writer: w,
 	//}
 	H.ctx = &Context{
-		Req:    req,
-		Writer: w,
+		Req:  req,
+		Resp: w,
 	}
 
 	H.serve()
@@ -48,8 +48,8 @@ func (H *HTTPServer) serve() {
 	dst := H.matchRouter(H.ctx.Req.Method, H.ctx.Req.URL.Path)
 	// do not match HandleFunc
 	if dst == nil || dst.n.handler == nil {
-		H.ctx.Writer.WriteHeader(http.StatusNotFound)
-		_, _ = H.ctx.Writer.Write([]byte("404 page not found"))
+		H.ctx.Resp.WriteHeader(http.StatusNotFound)
+		_, _ = H.ctx.Resp.Write([]byte("404 page not found"))
 		return
 	}
 	// put the matchInfo into ctx
