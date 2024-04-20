@@ -73,8 +73,13 @@ func main() {
 
 	}
 
-	v1.GET("/hhh", func(c *gee.Context) {
+	v1.GET("/hhh/:name/detail", func(c *gee.Context) {
 		c.HTMLString(http.StatusOK, "<h1>Hello Gee</h1>")
+	})
+	v1.GET("/hhh/:fake_name/hello", func(c *gee.Context) {
+		c.JSON(http.StatusOK, gee.H{
+			"msg": "hello " + c.Param("fake_name"),
+		})
 	})
 
 	r.Run(":9999")
