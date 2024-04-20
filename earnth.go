@@ -42,7 +42,7 @@ func (H *HTTPServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 func (H *HTTPServer) serve(ctx *Context) {
 	dst := H.matchRouter(ctx.Req.Method, ctx.Req.URL.Path)
 	// do not match HandleFunc
-	if dst.handler == nil {
+	if dst == nil || dst.handler == nil {
 		ctx.Writer.WriteHeader(http.StatusNotFound)
 		_, _ = ctx.Writer.Write([]byte("404 page not found"))
 		return

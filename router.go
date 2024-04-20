@@ -69,25 +69,24 @@ func (r *router) matchRouter(method, path string) *node {
 
 	for _, unit := range units {
 		next, ok := cur.children[unit]
-		// can't find the exact match
+		// can find the exact match
 		if !ok {
+			if cur.wildcardChild == nil && cur.colonChild == nil {
+				return nil
+			}
 			// try to find the colon child
 			if cur.colonChild != nil {
 				// todo need to fix
-
 				cur = cur.colonChild
-
-			} else {
-				//tey to find the wildcard child
-				if cur.wildcardChild != nil {
-					cur = cur.wildcardChild
-				} else {
-					return nil
-				}
 			}
-
+			//tey to find the wildcard child
+			if cur.wildcardChild != nil {
+				cur = cur.wildcardChild
+			}
+		} else {
+			cur = next
 		}
-		cur = next
+
 	}
 	return cur
 }
@@ -123,9 +122,13 @@ type ParamInfo struct {
 func (n *node) childOrCreate(seg string) *node {
 	// special process the ":name"
 	if seg[0] == ':' {
+		if n.wildcardChild != nil || n.colonChild != nil {
+			panic(fmt.Sprintf("router already has a wildcard or colon child[%s]", seg))
+		}
 		if n.colonChild == nil {
 			n.colonChild = &node{
-				path: seg[1:],
+				//path: seg[1:],
+				path: seg,
 			}
 			return n.colonChild
 		}
@@ -133,6 +136,10 @@ func (n *node) childOrCreate(seg string) *node {
 	}
 	// special process the '*'
 	if seg == "*" {
+		// limit the ':'
+		if n.wildcardChild != nil || n.colonChild != nil {
+			panic(fmt.Sprintf("router already has a wildcard or colon child[%s]", seg))
+		}
 		if n.wildcardChild == nil {
 			n.wildcardChild = &node{
 				path: seg,
