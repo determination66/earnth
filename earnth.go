@@ -53,7 +53,7 @@ func (H *HTTPServer) serve() {
 		return
 	}
 	// put the matchInfo into ctx
-	H.ctx.matchInfo = dst
+	H.ctx.pathParams = dst.pathParams
 	dst.n.handler(H.ctx)
 }
 

@@ -170,7 +170,3 @@ type matchInfo struct {
 	n          *node
 	pathParams map[string]string
 }
-
-func (m *matchInfo) getParam(key string) string {
-	return m.pathParams[key]
-}
