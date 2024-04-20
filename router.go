@@ -131,9 +131,13 @@ func (n *node) childOrCreate(seg string) *node {
 	}
 	// special process the '*'
 	if seg == "*" {
-		n.wildcardChild = &node{
-			path: seg,
+		if n.wildcardChild == nil {
+			n.wildcardChild = &node{
+				path: seg,
+			}
+			return n.wildcardChild
 		}
+
 		return n.wildcardChild
 	}
 	if n.children == nil {

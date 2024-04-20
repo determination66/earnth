@@ -12,9 +12,9 @@ func TestServer(T *testing.T) {
 	s.Get("/user/*", func(ctx *Context) {
 		fmt.Println("hello world")
 	})
-	s.Get("/user/*", func(ctx *Context) {
-		fmt.Println("hello world")
-	})
+	//s.Get("/user/*", func(ctx *Context) {
+	//	fmt.Println("hello world")
+	//})
 
 	s.Get("/", func(ctx *Context) {
 		fmt.Println("/")
@@ -25,6 +25,9 @@ func TestServer(T *testing.T) {
 	s.Post("/order/detail", func(ctx *Context) {
 		ctx.Writer.Write([]byte("order detail"))
 	})
+	s.Get("/user/:name", func(ctx *Context) {
+		ctx.Writer.Write([]byte("user name"))
+	})
 
-	s.Start(":8080")
+	s.Start(":9999")
 }
