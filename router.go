@@ -7,6 +7,7 @@ import (
 
 type router struct {
 	trees map[string]*node
+	ctx   *Context
 }
 
 func newRouter() *router {
@@ -56,39 +57,47 @@ func (r *router) AddRoute(method string, path string, handleFunc HandleFunc) {
 
 // static routers first, then dynamic routers
 // static (/user/abc) --> colon (/user/:name) --> wildcard (/user/*)
-func (r *router) matchRouter(method, path string) *node {
+func (r *router) matchRouter(method, path string) *matchInfo {
 	root, ok := r.trees[method]
 	if !ok {
 		return nil
 	}
 	if path == "/" {
-		return root
+		return &matchInfo{
+			n: root,
+		}
 	}
-	cur := root
+	mInfo := &matchInfo{
+		n:          root,
+		pathParams: map[string]string{},
+	}
+
+	//mInfo.n := root
 	units := strings.Split(path[1:], "/")
 
 	for _, unit := range units {
-		next, ok := cur.children[unit]
+		next, ok := mInfo.n.children[unit]
 		// can find the exact match
 		if !ok {
-			if cur.wildcardChild == nil && cur.colonChild == nil {
+			if mInfo.n.wildcardChild == nil && mInfo.n.colonChild == nil {
 				return nil
 			}
 			// try to find the colon child
-			if cur.colonChild != nil {
+			if mInfo.n.colonChild != nil {
 				// todo need to fix
-				cur = cur.colonChild
+				mInfo.pathParams[mInfo.n.colonChild.path] = unit
+				mInfo.n = mInfo.n.colonChild
 			}
 			//tey to find the wildcard child
-			if cur.wildcardChild != nil {
-				cur = cur.wildcardChild
+			if mInfo.n.wildcardChild != nil {
+				mInfo.n = mInfo.n.wildcardChild
 			}
 		} else {
-			cur = next
+			mInfo.n = next
 		}
 
 	}
-	return cur
+	return mInfo
 }
 
 type node struct {
@@ -106,12 +115,6 @@ type node struct {
 	handler HandleFunc
 }
 
-// ParamNode router node ,to parse ":name"
-//type ParamNode struct {
-//	name string //parameter name
-//	n    *node
-//}
-
 // ParamInfo for the dynamic Params
 type ParamInfo struct {
 	pathParams map[string]string
@@ -127,8 +130,8 @@ func (n *node) childOrCreate(seg string) *node {
 		}
 		if n.colonChild == nil {
 			n.colonChild = &node{
-				//path: seg[1:],
-				path: seg,
+				path: seg[1:],
+				//path: seg,
 			}
 			return n.colonChild
 		}
@@ -163,44 +166,11 @@ func (n *node) childOrCreate(seg string) *node {
 	return res
 }
 
-func (r *router) isEqual(y *router) bool {
-	if len(r.trees) != len(y.trees) {
-		return false
-	}
-	for method, root := range r.trees {
-		dst, ok := y.trees[method]
-		if !ok {
-			return false
-		}
-		if !root.isEqual(dst) {
-			return false
-		}
-	}
-	return true
+type matchInfo struct {
+	n          *node
+	pathParams map[string]string
 }
 
-func (n *node) isEqual(y *node) bool {
-	if n == nil && y == nil {
-		return true
-	}
-	if n == nil || y == nil {
-		return false
-	}
-	if n.path != y.path {
-		return false
-	}
-	if len(n.children) != len(y.children) {
-		return false
-	}
-
-	for key, child := range n.children {
-		dst, ok := y.children[key]
-		if !ok {
-			return false
-		}
-		if !child.isEqual(dst) {
-			return false
-		}
-	}
-	return true
+func (m *matchInfo) getParam(key string) string {
+	return m.pathParams[key]
 }

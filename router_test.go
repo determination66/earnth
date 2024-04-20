@@ -65,7 +65,7 @@ func TestRouter_match(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			actual := r.matchRouter(tc.method, tc.path)
-			if actual != tc.expected {
+			if actual.n != tc.expected {
 				t.Errorf("expected %v, got %v", tc.expected, actual)
 			}
 		})
@@ -101,4 +101,46 @@ func TestRouter_IsEqual(t *testing.T) {
 	if r1.isEqual(r2) {
 		t.Errorf("Expected r1 and r2 to be different")
 	}
+}
+
+func (r *router) isEqual(y *router) bool {
+	if len(r.trees) != len(y.trees) {
+		return false
+	}
+	for method, root := range r.trees {
+		dst, ok := y.trees[method]
+		if !ok {
+			return false
+		}
+		if !root.isEqual(dst) {
+			return false
+		}
+	}
+	return true
+}
+
+func (n *node) isEqual(y *node) bool {
+	if n == nil && y == nil {
+		return true
+	}
+	if n == nil || y == nil {
+		return false
+	}
+	if n.path != y.path {
+		return false
+	}
+	if len(n.children) != len(y.children) {
+		return false
+	}
+
+	for key, child := range n.children {
+		dst, ok := y.children[key]
+		if !ok {
+			return false
+		}
+		if !child.isEqual(dst) {
+			return false
+		}
+	}
+	return true
 }

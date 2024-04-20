@@ -26,7 +26,7 @@ func TestServer(T *testing.T) {
 		ctx.Writer.Write([]byte("order detail"))
 	})
 	s.Get("/user/:name", func(ctx *Context) {
-		ctx.Writer.Write([]byte("user name"))
+		ctx.Writer.Write([]byte(ctx.getParam("name")))
 	})
 
 	s.Start(":9999")
