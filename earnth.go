@@ -31,15 +31,8 @@ func NewHTTPServer() *HTTPServer {
 
 // ServeHTTP This implements the handler interface,so the earnth's real processing logic code.
 func (H *HTTPServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	// 处理业务。
-	//ctx := &Context{
-	//	Req:    req,
-	//	Writer: w,
-	//}
-	H.ctx = &Context{
-		Req:  req,
-		Resp: w,
-	}
+
+	H.ctx = newContext(req, w)
 
 	H.serve()
 }

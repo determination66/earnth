@@ -4,13 +4,24 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/url"
 )
 
 type Context struct {
-	Req        *http.Request
-	Resp       http.ResponseWriter
+	Req  *http.Request
+	Resp http.ResponseWriter
+
 	pathParams map[string]string
-	statusCode int
+
+	queryValues url.Values
+	statusCode  int
+}
+
+func newContext(req *http.Request, resp http.ResponseWriter) *Context {
+	return &Context{
+		Req:  req,
+		Resp: resp,
+	}
 }
 
 func (ctx *Context) getParam(key string) string {
@@ -33,4 +44,9 @@ func (ctx *Context) ParseForm(key string) (string, error) {
 		return "", err
 	}
 	return ctx.Req.Form.Get(key), nil
+}
+
+func (ctx *Context) Query(key string) string {
+	return ""
+	//return ctx.Req.URL.Query()
 }
