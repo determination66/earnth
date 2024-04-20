@@ -72,7 +72,7 @@ func (r *router) matchRouter(method, path string) *node {
 		// can't find the exact match
 		if !ok {
 			// try to find the colon child
-			if cur.handler != nil {
+			if cur.colonChild != nil {
 				// todo need to fix
 
 				cur = cur.colonChild
@@ -81,9 +81,11 @@ func (r *router) matchRouter(method, path string) *node {
 				//tey to find the wildcard child
 				if cur.wildcardChild != nil {
 					cur = cur.wildcardChild
+				} else {
+					return nil
 				}
 			}
-			return nil
+
 		}
 		cur = next
 	}
