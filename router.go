@@ -7,7 +7,7 @@ import (
 
 type router struct {
 	trees map[string]*node
-	ctx   *Context
+	//ctx   *Context
 }
 
 func newRouter() *router {

@@ -79,3 +79,27 @@ func TestOrigin(T *testing.T) {
 
 	http.ListenAndServe(":9999", nil)
 }
+
+func TestUse(T *testing.T) {
+
+	s := NewHTTPServer()
+
+	var m1 Middleware = func(next HandleFunc) HandleFunc {
+		fmt.Println("m1")
+		return next
+	}
+
+	var m2 Middleware = func(next HandleFunc) HandleFunc {
+		fmt.Println("m2")
+		return next
+	}
+
+	s.Use(m1, m2)
+
+	s.Post("/order/detail", func(ctx *Context) {
+		ctx.Resp.Write([]byte("order detail"))
+	})
+
+	s.Start(":9999")
+
+}

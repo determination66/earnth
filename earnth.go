@@ -14,6 +14,7 @@ type Server interface {
 	http.Handler
 	Start(addr string) error
 
+	Use(mdls ...Middleware)
 	// AddRoute 也就是说可以用GET、POST、DELETE、OPTIONS、PUT、TRACE、CONNECT、HEAD
 	AddRoute(method string, path string, handleFunc HandleFunc)
 }
@@ -21,6 +22,8 @@ type Server interface {
 // HTTPServer This is the earnth's Engine. It exposes all the interfaces for users.
 type HTTPServer struct {
 	*router
+
+	mdls []Middleware
 }
 
 func NewHTTPServer() *HTTPServer {
@@ -29,25 +32,42 @@ func NewHTTPServer() *HTTPServer {
 	}
 }
 
-// ServeHTTP This implements the handler interface,so the earnth's real processing logic code.
-func (H *HTTPServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-
-	H.ctx = newContext(req, w)
-
-	H.serve()
+func (H *HTTPServer) Use(mdls ...Middleware) {
+	H.mdls = append(H.mdls, mdls...)
 }
 
-func (H *HTTPServer) serve() {
-	dst := H.matchRouter(H.ctx.Req.Method, H.ctx.Req.URL.Path)
+// ServeHTTP This implements the handler interface,so the earnth's real processing logic code.
+func (H *HTTPServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	ctx := newContext(req, w)
+
+	var root HandleFunc = H.serve
+	// exec mdls
+	// callback func need to reverse order
+	for i := len(H.mdls) - 1; i >= 0; i-- {
+		root = H.mdls[i](root)
+	}
+	//var m Middleware = func(next HandleFunc) HandleFunc {
+	//	return func(ctx *Context) {
+	//
+	//		next(ctx)
+	//		//s.flashResp(ctx)
+	//	}
+	//}
+	//root = m(root)
+	root(ctx)
+}
+
+func (H *HTTPServer) serve(ctx *Context) {
+	dst := H.matchRouter(ctx.Req.Method, ctx.Req.URL.Path)
 	// do not match HandleFunc
 	if dst == nil || dst.n.handler == nil {
-		H.ctx.Resp.WriteHeader(http.StatusNotFound)
-		_, _ = H.ctx.Resp.Write([]byte("404 page not found"))
+		ctx.Resp.WriteHeader(http.StatusNotFound)
+		_, _ = ctx.Resp.Write([]byte("404 page not found"))
 		return
 	}
 	// put the matchInfo into ctx
-	H.ctx.pathParams = dst.pathParams
-	dst.n.handler(H.ctx)
+	ctx.pathParams = dst.pathParams
+	dst.n.handler(ctx)
 }
 
 func (H *HTTPServer) Start(addr string) error {
