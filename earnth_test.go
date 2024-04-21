@@ -83,18 +83,25 @@ func TestOrigin(T *testing.T) {
 func TestUse(T *testing.T) {
 
 	s := NewHTTPServer()
+	mdls := []MiddlewareFunc{
+		func(next HandleFunc) HandleFunc {
+			return func(ctx *Context) {
+				fmt.Println("第一个Before")
+				next(ctx)
+				fmt.Println("第一个After")
 
-	var m1 Middleware = func(next HandleFunc) HandleFunc {
-		fmt.Println("m1")
-		return next
+			}
+		},
+		func(next HandleFunc) HandleFunc {
+			return func(ctx *Context) {
+				fmt.Println("第二个Before")
+				next(ctx)
+				fmt.Println("第二个After")
+			}
+		},
 	}
 
-	var m2 Middleware = func(next HandleFunc) HandleFunc {
-		fmt.Println("m2")
-		return next
-	}
-
-	s.Use(m1, m2)
+	s.Use(mdls...)
 
 	s.Post("/order/detail", func(ctx *Context) {
 		ctx.Resp.Write([]byte("order detail"))

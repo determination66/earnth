@@ -11,6 +11,9 @@ type Context struct {
 	Req  *http.Request
 	Resp http.ResponseWriter
 
+	RespStatusCode int
+	ResData        []byte
+
 	pathParams map[string]string
 
 	queryValues url.Values
@@ -25,10 +28,13 @@ func newContext(req *http.Request, resp http.ResponseWriter) *Context {
 
 func (ctx *Context) JSON(statusCode int, data interface{}) error {
 	ctx.Resp.Header().Set("Content-Type", "application/json; charset=utf-8")
-	ctx.Resp.WriteHeader(statusCode)
-	enc := json.NewEncoder(ctx.Resp)
-
-	return enc.Encode(data)
+	ctx.RespStatusCode = statusCode
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	ctx.ResData = jsonData
+	return err
 }
 
 func (ctx *Context) pathValue(key string) (string, error) {

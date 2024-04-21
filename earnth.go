@@ -14,7 +14,7 @@ type Server interface {
 	http.Handler
 	Start(addr string) error
 
-	Use(mdls ...Middleware)
+	Use(mdls ...MiddlewareFunc)
 	// AddRoute 也就是说可以用GET、POST、DELETE、OPTIONS、PUT、TRACE、CONNECT、HEAD
 	AddRoute(method string, path string, handleFunc HandleFunc)
 }
@@ -23,7 +23,7 @@ type Server interface {
 type HTTPServer struct {
 	*router
 
-	mdls []Middleware
+	mdls []MiddlewareFunc
 }
 
 func NewHTTPServer() *HTTPServer {
@@ -32,7 +32,7 @@ func NewHTTPServer() *HTTPServer {
 	}
 }
 
-func (H *HTTPServer) Use(mdls ...Middleware) {
+func (H *HTTPServer) Use(mdls ...MiddlewareFunc) {
 	H.mdls = append(H.mdls, mdls...)
 }
 
@@ -46,14 +46,14 @@ func (H *HTTPServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	for i := len(H.mdls) - 1; i >= 0; i-- {
 		root = H.mdls[i](root)
 	}
-	//var m Middleware = func(next HandleFunc) HandleFunc {
-	//	return func(ctx *Context) {
-	//
-	//		next(ctx)
-	//		//s.flashResp(ctx)
-	//	}
-	//}
-	//root = m(root)
+	// use m to write back
+	var m MiddlewareFunc = func(next HandleFunc) HandleFunc {
+		return func(ctx *Context) {
+			next(ctx)
+			H.flashResp(ctx)
+		}
+	}
+	root = m(root)
 	root(ctx)
 }
 
@@ -108,4 +108,14 @@ func (H *HTTPServer) Head(path string, handleFunc HandleFunc) {
 }
 func (H *HTTPServer) Trace(path string, handleFunc HandleFunc) {
 	H.AddRoute(http.MethodTrace, path, handleFunc)
+}
+
+func (H *HTTPServer) flashResp(ctx *Context) {
+	if ctx.RespStatusCode > 0 {
+		ctx.Resp.WriteHeader(ctx.RespStatusCode)
+	}
+	_, err := ctx.Resp.Write(ctx.ResData)
+	if err != nil {
+		panic("fail to write back")
+	}
 }

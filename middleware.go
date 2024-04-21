@@ -1,3 +1,3 @@
 package earnth
 
-type Middleware func(next HandleFunc) HandleFunc
+type MiddlewareFunc func(next HandleFunc) HandleFunc
