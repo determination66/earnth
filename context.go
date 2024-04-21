@@ -14,7 +14,6 @@ type Context struct {
 	pathParams map[string]string
 
 	queryValues url.Values
-	statusCode  int
 }
 
 func newContext(req *http.Request, resp http.ResponseWriter) *Context {
@@ -24,8 +23,20 @@ func newContext(req *http.Request, resp http.ResponseWriter) *Context {
 	}
 }
 
-func (ctx *Context) getParam(key string) string {
-	return ctx.pathParams[key]
+func (ctx *Context) JSON(statusCode int, data interface{}) error {
+	ctx.Resp.Header().Set("Content-Type", "application/json; charset=utf-8")
+	ctx.Resp.WriteHeader(statusCode)
+	enc := json.NewEncoder(ctx.Resp)
+
+	return enc.Encode(data)
+}
+
+func (ctx *Context) pathValue(key string) (string, error) {
+	res, ok := ctx.pathParams[key]
+	if !ok {
+		return "", errors.New("no such path param")
+	}
+	return res, nil
 }
 
 // BindJSON the most popular method
@@ -46,7 +57,15 @@ func (ctx *Context) ParseForm(key string) (string, error) {
 	return ctx.Req.Form.Get(key), nil
 }
 
-func (ctx *Context) Query(key string) string {
-	return ""
-	//return ctx.Req.URL.Query()
+// QueryValue return query value
+// add cache
+func (ctx *Context) QueryValue(key string) (string, error) {
+	if ctx.queryValues == nil {
+		ctx.queryValues = ctx.Req.URL.Query()
+	}
+	vals, ok := ctx.queryValues[key]
+	if !ok {
+		return "", errors.New("no such query param")
+	}
+	return vals[0], nil
 }

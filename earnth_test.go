@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 )
 
 func TestServer(T *testing.T) {
@@ -27,7 +28,8 @@ func TestServer(T *testing.T) {
 		ctx.Resp.Write([]byte("order detail"))
 	})
 	s.Get("/user/:name", func(ctx *Context) {
-		ctx.Resp.Write([]byte(ctx.getParam("name")))
+		name, _ := ctx.pathValue("name")
+		ctx.Resp.Write([]byte(name))
 	})
 
 	s.Post("/submit", func(ctx *Context) {
@@ -61,18 +63,18 @@ func TestOrigin(T *testing.T) {
 		fmt.Fprintf(w, "Password: %s\n", password)
 	})
 
-	http.HandleFunc("/query", func(w http.ResponseWriter, r *http.Request) {
-		// 解析 URL 中的查询参数
-		queryParams := r.URL.Query()
+	http.HandleFunc("/query1", func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
 
-		// 从查询参数中获取参数值
-		username := queryParams.Get("username")
-		password := queryParams.Get("password")
+		// 多次调用 Query() 方法
+		for i := 0; i < 5; i++ {
+			queryParams := r.URL.Query()
+			username := queryParams.Get("username")
+			fmt.Fprintf(w, "Username: %s\n", username)
+		}
 
-		// 处理查询参数
-		fmt.Fprintf(w, "Received query parameters:\n")
-		fmt.Fprintf(w, "Username: %s\n", username)
-		fmt.Fprintf(w, "Password: %s\n", password)
+		elapsed := time.Since(start)
+		fmt.Fprintf(w, "Time elapsed: %s\n", elapsed)
 	})
 
 	http.ListenAndServe(":9999", nil)
