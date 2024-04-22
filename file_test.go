@@ -19,28 +19,34 @@ func TestReadFile(t *testing.T) {
 }
 
 func TestWriteFile(t *testing.T) {
-	// 保存当前工作目录
-	originalDir, err := os.Getwd()
-	require.NoError(t, err)
-	defer func() {
-		// 恢复原始工作目录
-		err := os.Chdir(originalDir)
-		require.NoError(t, err)
-	}()
-
-	// 修改当前工作目录到包含测试文件的位置
-	testdataDir := filepath.Join(originalDir, "testdata")
-	err = os.Chdir(testdataDir)
-	require.NoError(t, err)
-
-	// 准备测试数据
 	content := []byte("Hello, world!")
-	filename := "test.txt"
+	filename := filepath.Join("testdata", "file_test", "test.txt")
 
 	// 创建文件
 	f, err := os.Create(filename)
 	require.NoError(t, err)
 	n, err := f.Write(content)
+	//n, err = f.WriteString("string")
 	require.NoError(t, err)
 	require.Equal(t, len(content), n)
+}
+
+func TestUpload(t *testing.T) {
+	s := NewHTTPServer()
+	err := s.LoadGlob(filepath.Join("testdata", "tpls", "*.gohtml"))
+	if err != nil {
+		panic(err)
+	}
+
+	s.Get("/upload", func(ctx *Context) {
+		err = ctx.Render("upload.gohtml", nil)
+		if err != nil {
+			panic(err)
+		}
+
+	})
+	fi := NewFileUpload("my_file")
+	s.Post("/upload", fi.Handle())
+	s.Start(":9999")
+
 }

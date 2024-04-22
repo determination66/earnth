@@ -18,7 +18,7 @@ func TestHelloWrold(t *testing.T) {
 	tpl, err := tpl.Parse(`Hello, {{ .Name}}`)
 	require.NoError(t, err)
 	buffer := &bytes.Buffer{}
-	//err = tpl.Execute(buffer, User{Name: "Tom"})
+	//err = tpls.Execute(buffer, User{Name: "Tom"})
 	err = tpl.Execute(buffer, map[string]string{"Name": "Tom"})
 	require.NoError(t, err)
 	assert.Equal(t, `Hello, Tom`, buffer.String())
@@ -251,4 +251,51 @@ func TestPipeline(t *testing.T) {
 			assert.Equal(t, tc.want, html.UnescapeString(bs.String()))
 		})
 	}
+}
+
+func TestTemplate(T *testing.T) {
+
+	s := NewHTTPServer()
+	mdls := []MiddlewareFunc{
+		func(next HandleFunc) HandleFunc {
+			return func(ctx *Context) {
+				fmt.Println("第一个Before")
+				next(ctx)
+				fmt.Println("第一个After")
+
+			}
+		},
+		func(next HandleFunc) HandleFunc {
+			return func(ctx *Context) {
+				fmt.Println("第二个Before")
+				next(ctx)
+				fmt.Println("第二个After")
+			}
+		},
+	}
+	//tpls, err := template.ParseGlob("testdata/tpls/*.gohtml")
+	//if err != nil {
+	//	panic(err)
+	//}
+	//s.registerTemplateEngine(&GoTemplateEngine{
+	//	T: tpls,
+	//})
+
+	err := s.LoadGlob("testdata/tpls/*.gohtml")
+	if err != nil {
+		panic(err)
+	}
+	s.Use(mdls...)
+
+	s.Get("/login", func(ctx *Context) {
+		err = ctx.Render("login.gohtml", map[string]interface{}{"email": "2496417370@qq.com", "password": "123456"})
+		if err != nil {
+			panic(err)
+		}
+	})
+	s.Post("/order/detail", func(ctx *Context) {
+		ctx.Resp.Write([]byte("order detail"))
+	})
+
+	s.Start(":9999")
 }

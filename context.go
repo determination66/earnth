@@ -34,7 +34,7 @@ func newContext(req *http.Request, resp http.ResponseWriter, tplEngine TemplateE
 }
 
 func (ctx *Context) Render(tplName string, data any) error {
-	// 不要这样子去做
+	// not ok
 	// tplName = tplName + ".gohtml"
 	// tplName = tplName + c.tplPrefix
 	var err error

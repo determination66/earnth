@@ -5,6 +5,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 type FileUpload struct {
@@ -15,15 +16,24 @@ type FileUpload struct {
 	DstPathFunc func(*multipart.FileHeader) string
 }
 
+func NewFileUpload(fileField string) *FileUpload {
+	return &FileUpload{
+		FileField: fileField,
+		DstPathFunc: func(fileHeader *multipart.FileHeader) string {
+			// Default destination path function
+			err := os.MkdirAll(filepath.Join("testdata", "uploads"), os.ModePerm)
+			if err != nil {
+				panic(err)
+			}
+			return filepath.Join("testdata", "uploads", fileHeader.Filename)
+		},
+	}
+}
+
 func (f *FileUpload) Handle() HandleFunc {
 	if f.FileField == "" {
 		f.FileField = "file"
 	}
-
-	if f.DstPathFunc == nil {
-		// todo Set Default
-	}
-
 	return func(ctx *Context) {
 		// Step 1: Read the file content
 		file, fileHeader, err := ctx.Req.FormFile(f.FileField)
@@ -37,15 +47,15 @@ func (f *FileUpload) Handle() HandleFunc {
 		// Step 2: Calculate the target path
 		dst := f.DstPathFunc(fileHeader)
 
+		// Step 3: Save the file
 		dstFile, err := os.OpenFile(dst, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0o666)
 		if err != nil {
 			ctx.RespStatusCode = http.StatusInternalServerError
-			ctx.RespData = []byte("上传失败" + err.Error())
+			ctx.RespData = []byte("fail to upload" + err.Error())
 			return
 		}
 		defer dstFile.Close()
 
-		// Step 3: Save the file
 		// Step 4: Return response
 		_, err = io.CopyBuffer(dstFile, file, nil)
 		if err != nil {
@@ -56,5 +66,4 @@ func (f *FileUpload) Handle() HandleFunc {
 		ctx.RespStatusCode = http.StatusOK
 		ctx.RespData = []byte("upload success")
 	}
-
 }
