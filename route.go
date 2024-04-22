@@ -7,7 +7,6 @@ import (
 
 type router struct {
 	trees map[string]*node
-	//ctx   *Context
 }
 
 func newRouter() *router {
@@ -25,7 +24,7 @@ func (r *router) AddRoute(method string, path string, handleFunc HandleFunc) {
 	root, ok := r.trees[method]
 	if !ok {
 		root = &node{
-			path: "/",
+			seg: "/",
 		}
 		r.trees[method] = root
 	}
@@ -52,6 +51,7 @@ func (r *router) AddRoute(method string, path string, handleFunc HandleFunc) {
 		panic(fmt.Sprintf("Duplicate router: [method:%s path:%s]", method, path))
 	}
 	root.handler = handleFunc
+	//root. //todo
 	fmt.Println("add", method, path)
 }
 
@@ -68,15 +68,16 @@ func (r *router) matchRouter(method, path string) *matchInfo {
 		}
 	}
 	mInfo := &matchInfo{
-		n:          root,
+		n: root,
+
 		pathParams: map[string]string{},
 	}
 
 	//mInfo.n := root
-	units := strings.Split(path[1:], "/")
+	segments := strings.Split(path[1:], "/")
 
-	for _, unit := range units {
-		next, ok := mInfo.n.children[unit]
+	for _, seg := range segments {
+		next, ok := mInfo.n.children[seg]
 		// can find the exact match
 		if !ok {
 			if mInfo.n.wildcardChild == nil && mInfo.n.colonChild == nil {
@@ -85,7 +86,7 @@ func (r *router) matchRouter(method, path string) *matchInfo {
 			// try to find the colon child
 			if mInfo.n.colonChild != nil {
 				// todo need to fix
-				mInfo.pathParams[mInfo.n.colonChild.path] = unit
+				mInfo.pathParams[mInfo.n.colonChild.seg] = seg
 				mInfo.n = mInfo.n.colonChild
 			}
 			//tey to find the wildcard child
@@ -95,13 +96,12 @@ func (r *router) matchRouter(method, path string) *matchInfo {
 		} else {
 			mInfo.n = next
 		}
-
 	}
 	return mInfo
 }
 
 type node struct {
-	path string
+	seg string
 	// static router match
 	children map[string]*node
 
@@ -130,7 +130,7 @@ func (n *node) childOrCreate(seg string) *node {
 		}
 		if n.colonChild == nil {
 			n.colonChild = &node{
-				path: seg[1:],
+				seg: seg[1:],
 				//path: seg,
 			}
 			return n.colonChild
@@ -145,7 +145,7 @@ func (n *node) childOrCreate(seg string) *node {
 		}
 		if n.wildcardChild == nil {
 			n.wildcardChild = &node{
-				path: seg,
+				seg: seg,
 			}
 			return n.wildcardChild
 		}
@@ -159,7 +159,7 @@ func (n *node) childOrCreate(seg string) *node {
 	res, ok := n.children[seg]
 	if !ok {
 		res = &node{
-			path: seg,
+			seg: seg,
 		}
 		n.children[seg] = res
 	}
@@ -167,6 +167,7 @@ func (n *node) childOrCreate(seg string) *node {
 }
 
 type matchInfo struct {
-	n          *node
+	n *node
+	//matchedRoute string
 	pathParams map[string]string
 }

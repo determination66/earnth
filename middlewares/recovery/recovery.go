@@ -41,8 +41,6 @@ func NewRecoveryMiddlewareBuilder() *RecoveryMiddlewareBuilder {
 			ctx.Resp.WriteHeader(ctx.RespStatusCode)
 			ctx.RespHeaderCommitted = true
 			ctx.Resp.Write([]byte("Internal Server Error,statusCode:500"))
-
-			return
 		},
 	}
 }

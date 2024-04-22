@@ -17,6 +17,8 @@ type Context struct {
 
 	pathParams map[string]string
 
+	matchedRoute string
+
 	queryValues url.Values
 	//RespCommitted bool // Add a field to mark if the response has been committed
 }

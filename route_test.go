@@ -126,7 +126,7 @@ func (n *node) isEqual(y *node) bool {
 	if n == nil || y == nil {
 		return false
 	}
-	if n.path != y.path {
+	if n.seg != y.seg {
 		return false
 	}
 	if len(n.children) != len(y.children) {

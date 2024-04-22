@@ -3,6 +3,7 @@ package logger
 import (
 	"earnth"
 	"encoding/json"
+	"fmt"
 	"log"
 )
 
@@ -14,6 +15,7 @@ type LoggerMiddlewareBuilder struct {
 func NewLoggerMiddlewareBuilder() *LoggerMiddlewareBuilder {
 	return &LoggerMiddlewareBuilder{
 		logFunc: func(accessLog string) {
+			fmt.Println()
 			log.Println(accessLog + "\n")
 		},
 	}
