@@ -24,12 +24,18 @@ type HTTPServer struct {
 	*router
 
 	mdls []MiddlewareFunc
+
+	tplEngine TemplateEngine
 }
 
 func NewHTTPServer() *HTTPServer {
 	return &HTTPServer{
 		router: newRouter(),
 	}
+}
+
+func (H *HTTPServer) registerTemplateEngine(tplEngine TemplateEngine) {
+	H.tplEngine = tplEngine
 }
 
 func (H *HTTPServer) Use(mdls ...MiddlewareFunc) {

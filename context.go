@@ -19,6 +19,8 @@ type Context struct {
 
 	MatchedRoute string
 
+	tplEngine TemplateEngine
+
 	queryValues url.Values
 	//RespCommitted bool // Add a field to mark if the response has been committed
 }
@@ -28,6 +30,20 @@ func newContext(req *http.Request, resp http.ResponseWriter) *Context {
 		Req:  req,
 		Resp: resp,
 	}
+}
+
+func (ctx *Context) Render(tplName string, data any) error {
+	// 不要这样子去做
+	// tplName = tplName + ".gohtml"
+	// tplName = tplName + c.tplPrefix
+	var err error
+	ctx.RespData, err = ctx.tplEngine.Render(ctx.Req.Context(), tplName, data)
+	if err != nil {
+		ctx.RespStatusCode = http.StatusInternalServerError
+		return err
+	}
+	ctx.RespStatusCode = http.StatusOK
+	return nil
 }
 
 func (ctx *Context) JSON(statusCode int, data interface{}) error {
