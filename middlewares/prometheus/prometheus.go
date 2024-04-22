@@ -35,9 +35,9 @@ func (m *MiddlewareBuilder) Build() earnth.MiddlewareFunc {
 func report(dur time.Duration, ctx *earnth.Context, vec prometheus.ObserverVec) {
 	status := ctx.RespStatusCode
 	route := "unknown"
-	//if ctx.MatchedRoute != "" {
-	//	route = ctx.MatchedRoute
-	//}
+	if ctx.MatchedRoute != "" {
+		route = ctx.MatchedRoute
+	}
 	ms := dur / time.Millisecond
 	vec.WithLabelValues(route, ctx.Req.Method, strconv.Itoa(status)).Observe(float64(ms))
 }

@@ -51,7 +51,7 @@ func (r *router) AddRoute(method string, path string, handleFunc HandleFunc) {
 		panic(fmt.Sprintf("Duplicate router: [method:%s path:%s]", method, path))
 	}
 	root.handler = handleFunc
-	//root. //todo
+	root.routerPath = path
 	fmt.Println("add", method, path)
 }
 
@@ -102,7 +102,10 @@ func (r *router) matchRouter(method, path string) *matchInfo {
 
 type node struct {
 	seg string
-	// static router match
+
+	routerPath string
+
+	// static router variable match
 	children map[string]*node
 
 	//wildcard router node ,to parse '*'

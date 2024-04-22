@@ -69,6 +69,7 @@ func (H *HTTPServer) serve(ctx *Context) {
 	}
 	// put the matchInfo into ctx
 	ctx.pathParams = dst.pathParams
+	ctx.MatchedRoute = dst.n.routerPath
 	dst.n.handler(ctx)
 }
 
