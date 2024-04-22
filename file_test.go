@@ -48,5 +48,4 @@ func TestUpload(t *testing.T) {
 	fi := NewFileUpload("my_file")
 	s.Post("/upload", fi.Handle())
 	s.Start(":9999")
-
 }

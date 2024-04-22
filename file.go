@@ -8,6 +8,9 @@ import (
 	"path/filepath"
 )
 
+// MemorySize byte,you can modify it to limit the size you upload
+var MaxUpLoadSize int64 = 32 << 20 // 32MB
+
 type FileUpload struct {
 	FileField string
 
@@ -35,11 +38,22 @@ func (f *FileUpload) Handle() HandleFunc {
 		f.FileField = "file"
 	}
 	return func(ctx *Context) {
+		// limit Space you upload
+		err := ctx.Req.ParseMultipartForm(MaxUpLoadSize)
+		if err != nil {
+			panic(err)
+		}
+
 		// Step 1: Read the file content
 		file, fileHeader, err := ctx.Req.FormFile(f.FileField)
 		if err != nil {
 			ctx.RespStatusCode = http.StatusInternalServerError
-			ctx.RespData = []byte("fail to upload file")
+			ctx.RespData = []byte("fail to upload file,err:" + err.Error())
+			return
+		}
+		if fileHeader.Size > MaxUpLoadSize {
+			ctx.RespStatusCode = http.StatusInternalServerError
+			ctx.RespData = []byte("fail to upload file,your file size is too large")
 			return
 		}
 		defer file.Close()
