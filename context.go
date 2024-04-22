@@ -11,12 +11,14 @@ type Context struct {
 	Req  *http.Request
 	Resp http.ResponseWriter
 
-	RespStatusCode int
-	ResData        []byte
+	RespStatusCode      int
+	RespHeaderCommitted bool
+	ResData             []byte
 
 	pathParams map[string]string
 
 	queryValues url.Values
+	//RespCommitted bool // Add a field to mark if the response has been committed
 }
 
 func newContext(req *http.Request, resp http.ResponseWriter) *Context {

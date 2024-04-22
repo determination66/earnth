@@ -11,24 +11,26 @@ type LoggerMiddlewareBuilder struct {
 	logFunc func(accessLog string)
 }
 
-func Logger() earnth.MiddlewareFunc {
-	return NewLoggerMiddlewareBuilder().Build()
-}
-
-func (b *LoggerMiddlewareBuilder) SetLogFunc(logFunc func(accessLog string)) *LoggerMiddlewareBuilder {
-	b.logFunc = logFunc
-	return b
-}
-
 func NewLoggerMiddlewareBuilder() *LoggerMiddlewareBuilder {
 	return &LoggerMiddlewareBuilder{
 		logFunc: func(accessLog string) {
-			log.Println(accessLog)
+			log.Println(accessLog + "\n")
 		},
 	}
 }
 
-// AccessLog 包含访问日志的信息
+// Logger the Default logger
+// if you want to type,you can use RegisterLogFunc for your logger
+func Logger() earnth.MiddlewareFunc {
+	return NewLoggerMiddlewareBuilder().Build()
+}
+
+func (b *LoggerMiddlewareBuilder) RegisterLogFunc(logFunc func(accessLog string)) *LoggerMiddlewareBuilder {
+	b.logFunc = logFunc
+	return b
+}
+
+// AccessLog log info
 type AccessLog struct {
 	Host string `json:"host"`
 	//Route      string `json:"route"`
@@ -37,7 +39,7 @@ type AccessLog struct {
 	Path       string `json:"path"`
 }
 
-// Build 用于构建日志记录中间件
+// Build for build logger middleware
 func (b *LoggerMiddlewareBuilder) Build() earnth.MiddlewareFunc {
 	return func(next earnth.HandleFunc) earnth.HandleFunc {
 		return func(ctx *earnth.Context) {
@@ -53,7 +55,9 @@ func (b *LoggerMiddlewareBuilder) Build() earnth.MiddlewareFunc {
 				// the accessLog text
 				b.logFunc(string(val))
 			}()
+			//fmt.Println("Before loggerr")
 			next(ctx)
+			//fmt.Println("After loggerr")
 		}
 	}
 }

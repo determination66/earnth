@@ -49,7 +49,9 @@ func (H *HTTPServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	// use m to write back
 	var m MiddlewareFunc = func(next HandleFunc) HandleFunc {
 		return func(ctx *Context) {
+			//fmt.Println("Before m")
 			next(ctx)
+			//fmt.Println("After m")
 			H.flashResp(ctx)
 		}
 	}
@@ -111,7 +113,7 @@ func (H *HTTPServer) Trace(path string, handleFunc HandleFunc) {
 }
 
 func (H *HTTPServer) flashResp(ctx *Context) {
-	if ctx.RespStatusCode > 0 {
+	if ctx.RespStatusCode > 0 && !ctx.RespHeaderCommitted {
 		ctx.Resp.WriteHeader(ctx.RespStatusCode)
 	}
 	_, err := ctx.Resp.Write(ctx.ResData)
