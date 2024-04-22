@@ -2,6 +2,7 @@ package earnth
 
 import (
 	"fmt"
+	"io/fs"
 	"net"
 	"net/http"
 )
@@ -44,7 +45,7 @@ func (H *HTTPServer) Use(mdls ...MiddlewareFunc) {
 
 // ServeHTTP This implements the handler interface,so the earnth's real processing logic code.
 func (H *HTTPServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	ctx := newContext(req, w)
+	ctx := newContext(req, w, H.tplEngine)
 
 	var root HandleFunc = H.serve
 	// exec mdls
@@ -127,4 +128,32 @@ func (H *HTTPServer) flashResp(ctx *Context) {
 	if err != nil {
 		panic("fail to write back")
 	}
+}
+
+func (H *HTTPServer) LoadGlob(pattern string) error {
+	H.tplEngine = NewGoTemplateEngine()
+	return H.tplEngine.LoadGlob(pattern)
+}
+
+func (H *HTTPServer) LoadFromFiles(filenames ...string) error {
+	H.tplEngine = NewGoTemplateEngine()
+	return H.tplEngine.LoadFromFiles(filenames...)
+}
+
+func (H *HTTPServer) LoadFromFS(fs fs.FS, patterns ...string) error {
+	H.tplEngine = NewGoTemplateEngine()
+	return H.tplEngine.LoadFromFS(fs, patterns...)
+}
+
+// ParseGlob pattern is your render directory
+func (H *HTTPServer) ParseGlob(pattern string) error {
+	return H.tplEngine.ParseGlob(pattern)
+}
+
+func (H *HTTPServer) ParseFiles(filenames ...string) error {
+	return H.tplEngine.ParseFiles(filenames...)
+}
+
+func (H *HTTPServer) ParseFromFS(fs fs.FS, patterns ...string) error {
+	return H.tplEngine.ParseFromFS(fs, patterns...)
 }

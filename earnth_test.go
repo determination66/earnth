@@ -100,13 +100,32 @@ func TestUse(T *testing.T) {
 			}
 		},
 	}
+	//tpl, err := template.ParseGlob("testdata/tpl/*.gohtml")
+	//if err != nil {
+	//	panic(err)
+	//}
+	//s.registerTemplateEngine(&GoTemplateEngine{
+	//	T: tpl,
+	//})
 
+	err := s.LoadGlob("testdata/tpl/*.gohtml")
+	if err != nil {
+		panic(err)
+	}
 	s.Use(mdls...)
 
+	s.Get("/login", func(ctx *Context) {
+		err = ctx.Render("login.gohtml", map[string]interface{}{
+			"email":    "2496417370@qq.com",
+			"password": "123456",
+		})
+		if err != nil {
+			panic(err)
+		}
+	})
 	s.Post("/order/detail", func(ctx *Context) {
 		ctx.Resp.Write([]byte("order detail"))
 	})
 
 	s.Start(":9999")
-
 }

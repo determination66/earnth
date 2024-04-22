@@ -25,10 +25,11 @@ type Context struct {
 	//RespCommitted bool // Add a field to mark if the response has been committed
 }
 
-func newContext(req *http.Request, resp http.ResponseWriter) *Context {
+func newContext(req *http.Request, resp http.ResponseWriter, tplEngine TemplateEngine) *Context {
 	return &Context{
-		Req:  req,
-		Resp: resp,
+		Req:       req,
+		Resp:      resp,
+		tplEngine: tplEngine,
 	}
 }
 
@@ -37,6 +38,9 @@ func (ctx *Context) Render(tplName string, data any) error {
 	// tplName = tplName + ".gohtml"
 	// tplName = tplName + c.tplPrefix
 	var err error
+	if ctx.tplEngine == nil {
+		panic("ctx template engine is nil, please call RegisterTemplateEngine first")
+	}
 	ctx.RespData, err = ctx.tplEngine.Render(ctx.Req.Context(), tplName, data)
 	if err != nil {
 		ctx.RespStatusCode = http.StatusInternalServerError
