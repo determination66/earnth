@@ -1,4 +1,4 @@
-module earnth
+module github.com/determination66/earnth
 
 go 1.21.0
 
