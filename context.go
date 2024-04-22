@@ -13,7 +13,7 @@ type Context struct {
 
 	RespStatusCode      int
 	RespHeaderCommitted bool
-	ResData             []byte
+	RespData            []byte
 
 	pathParams map[string]string
 
@@ -35,7 +35,7 @@ func (ctx *Context) JSON(statusCode int, data interface{}) error {
 	if err != nil {
 		return err
 	}
-	ctx.ResData = jsonData
+	ctx.RespData = jsonData
 	return err
 }
 

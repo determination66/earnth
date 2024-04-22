@@ -116,7 +116,7 @@ func (H *HTTPServer) flashResp(ctx *Context) {
 	if ctx.RespStatusCode > 0 && !ctx.RespHeaderCommitted {
 		ctx.Resp.WriteHeader(ctx.RespStatusCode)
 	}
-	_, err := ctx.Resp.Write(ctx.ResData)
+	_, err := ctx.Resp.Write(ctx.RespData)
 	if err != nil {
 		panic("fail to write back")
 	}
