@@ -35,8 +35,8 @@ func NewHTTPServer() *HTTPServer {
 	}
 }
 
-func (H *HTTPServer) Default() *HTTPServer {
-	H = NewHTTPServer()
+func Default() *HTTPServer {
+	H := NewHTTPServer()
 	H.Use(Logger(), Recovery())
 	return H
 }
