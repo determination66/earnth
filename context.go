@@ -61,7 +61,7 @@ func (ctx *Context) JSON(statusCode int, data interface{}) error {
 	return err
 }
 
-func (ctx *Context) pathValue(key string) (string, error) {
+func (ctx *Context) PathValue(key string) (string, error) {
 	res, ok := ctx.pathParams[key]
 	if !ok {
 		return "", errors.New("no such path param")

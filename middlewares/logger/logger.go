@@ -1,9 +1,9 @@
 package logger
 
 import (
-	"earnth"
 	"encoding/json"
 	"fmt"
+	"github.com/determination66/earnth"
 	"log"
 )
 

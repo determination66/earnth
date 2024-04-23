@@ -1,6 +1,6 @@
 package errhdl
 
-import "earnth"
+import "github.com/determination66/earnth"
 
 type ErrHdlMiddlewareBuilder struct {
 	resp map[int][]byte

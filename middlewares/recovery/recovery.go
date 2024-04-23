@@ -1,9 +1,9 @@
 package recovery
 
 import (
-	"earnth"
 	"encoding/json"
 	"fmt"
+	"github.com/determination66/earnth"
 	"log"
 	"net/http"
 )

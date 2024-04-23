@@ -1,7 +1,7 @@
 package prometheus
 
 import (
-	"earnth"
+	"github.com/determination66/earnth"
 	"github.com/prometheus/client_golang/prometheus"
 	"strconv"
 	"time"

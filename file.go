@@ -1,11 +1,13 @@
 package earnth
 
 import (
+	lru "github.com/hashicorp/golang-lru"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 )
 
 // MaxUpLoadSize MemorySize byte,you can modify it to limit the size you upload
@@ -120,4 +122,106 @@ func (f *FileDownload) Handle() HandleFunc {
 
 		http.ServeFile(ctx.Resp, ctx.Req, dst)
 	}
+}
+
+type StaticResourceHandlerOption func(handler *StaticResourceHandler)
+
+type StaticResourceHandler struct {
+	dir                     string
+	cache                   *lru.Cache
+	extensionContentTypeMap map[string]string
+	// 大文件不缓存
+	maxSize int
+}
+
+func NewStaticResourceHandler(dir string, opts ...StaticResourceHandlerOption) (*StaticResourceHandler, error) {
+	// 总共缓存 key-value
+	c, err := lru.New(1000)
+	if err != nil {
+		return nil, err
+	}
+	res := &StaticResourceHandler{
+		dir:   dir,
+		cache: c,
+		// 10 MB，文件大小超过这个值，就不会缓存
+		maxSize: 1024 * 1024 * 10,
+		extensionContentTypeMap: map[string]string{
+			// 这里根据自己的需要不断添加
+			"jpeg": "image/jpeg",
+			"jpe":  "image/jpeg",
+			"jpg":  "image/jpeg",
+			"png":  "image/png",
+			"pdf":  "image/pdf",
+		},
+	}
+
+	for _, opt := range opts {
+		opt(res)
+	}
+	return res, nil
+}
+
+func StaticWithMaxFileSize(maxSize int) StaticResourceHandlerOption {
+	return func(handler *StaticResourceHandler) {
+		handler.maxSize = maxSize
+	}
+}
+
+func StaticWithCache(c *lru.Cache) StaticResourceHandlerOption {
+	return func(handler *StaticResourceHandler) {
+		handler.cache = c
+	}
+}
+
+func StaticWithMoreExtension(extMap map[string]string) StaticResourceHandlerOption {
+	return func(h *StaticResourceHandler) {
+		for ext, contentType := range extMap {
+			h.extensionContentTypeMap[ext] = contentType
+		}
+	}
+}
+
+func (s *StaticResourceHandler) Handle(ctx *Context) {
+	// 无缓存
+	// 1. 拿到目标文件名
+	// 2. 定位到目标文件，并且读出来
+	// 3. 返回给前端
+
+	// 有缓存
+	file, err := ctx.PathValue("file")
+	if err != nil {
+		ctx.RespStatusCode = http.StatusBadRequest
+		ctx.RespData = []byte("your request url is invalid")
+		return
+	}
+
+	dst := filepath.Join(s.dir, file)
+	ext := filepath.Ext(dst)[1:]
+	header := ctx.Resp.Header()
+
+	if data, ok := s.cache.Get(file); ok {
+		contentType := s.extensionContentTypeMap[ext]
+		header.Set("Content-Type", contentType)
+		header.Set("Content-Length", strconv.Itoa(len(data.([]byte))))
+		ctx.RespData = data.([]byte)
+		ctx.RespStatusCode = http.StatusOK
+		return
+	}
+
+	data, err := os.ReadFile(dst)
+	if err != nil {
+		ctx.RespStatusCode = http.StatusInternalServerError
+		ctx.RespData = []byte("internal server error")
+		return
+	}
+	// 大文件不缓存
+	if len(data) <= s.maxSize {
+		s.cache.Add(file, data)
+	}
+	// 可能的有文本文件，图片，多媒体（视频，音频）
+	contentType := s.extensionContentTypeMap[ext]
+	header.Set("Content-Type", contentType)
+	header.Set("Content-Length", strconv.Itoa(len(data)))
+	ctx.RespData = data
+	ctx.RespStatusCode = http.StatusOK
 }

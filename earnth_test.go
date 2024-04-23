@@ -28,7 +28,7 @@ func TestServer(T *testing.T) {
 		ctx.Resp.Write([]byte("order detail"))
 	})
 	s.Get("/user/:name", func(ctx *Context) {
-		name, _ := ctx.pathValue("name")
+		name, _ := ctx.PathValue("name")
 		ctx.Resp.Write([]byte(name))
 	})
 

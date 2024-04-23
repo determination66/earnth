@@ -3,6 +3,7 @@ module github.com/determination66/earnth
 go 1.21.0
 
 require (
+	github.com/hashicorp/golang-lru v1.0.2
 	github.com/prometheus/client_golang v1.19.0
 	github.com/stretchr/testify v1.9.0
 )
