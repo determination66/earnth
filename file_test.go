@@ -68,5 +68,5 @@ func TestStaticResourceHandler_Handle(t *testing.T) {
 
 	// localhost:8081/static/xxx.jpg
 	h.Get("/static/:file", s.Handle)
-	h.Start(":8081")
+	h.Start(":9999")
 }

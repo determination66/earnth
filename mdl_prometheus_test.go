@@ -26,7 +26,7 @@ func TestMiddlewareBuilder_Build(t *testing.T) {
 		time.Sleep(time.Second)
 	})
 
-	s.Use((&MiddlewareBuilder{
+	s.Use((&PprometheusgoMiddlewareBuilder{
 		Subsystem: "earnth",
 		Name:      "http_request",
 		Help:      "这是测试例子",

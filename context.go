@@ -57,7 +57,7 @@ func (ctx *Context) JSON(statusCode int, data interface{}) error {
 	if err != nil {
 		return err
 	}
-	ctx.RespData = jsonData
+	ctx.RespData = append(ctx.RespData, jsonData...)
 	return err
 }
 
@@ -97,5 +97,13 @@ func (ctx *Context) QueryValue(key string) (string, error) {
 	if !ok {
 		return "", errors.New("no such query param")
 	}
-	return vals[0], nil
+	//decode val
+	// find bug
+	val := vals[0]
+	val, err := url.QueryUnescape(val)
+	if err != nil {
+		return "", err
+	}
+	return val, nil
+	//return vals[0], nil
 }

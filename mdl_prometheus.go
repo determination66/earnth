@@ -6,14 +6,14 @@ import (
 	"time"
 )
 
-type MiddlewareBuilder struct {
+type PprometheusgoMiddlewareBuilder struct {
 	Name        string
 	Subsystem   string
 	ConstLabels map[string]string
 	Help        string
 }
 
-func (m *MiddlewareBuilder) Build() MiddlewareFunc {
+func (m *PprometheusgoMiddlewareBuilder) Build() MiddlewareFunc {
 	summaryVec := prometheus.NewSummaryVec(prometheus.SummaryOpts{
 		Name:        m.Name,
 		Subsystem:   m.Subsystem,

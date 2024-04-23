@@ -1,6 +1,7 @@
 package earnth
 
 import (
+	"fmt"
 	lru "github.com/hashicorp/golang-lru"
 	"io"
 	"mime/multipart"
@@ -98,9 +99,10 @@ func (f *FileDownload) Handle() HandleFunc {
 	return func(ctx *Context) {
 		// 用的是 xxx?file=xxx
 		req, err := ctx.QueryValue("file")
+		fmt.Println(req)
 		if err != nil {
 			ctx.RespStatusCode = http.StatusBadRequest
-			ctx.RespData = []byte("找不到目标文件")
+			ctx.RespData = []byte("can not find target file")
 			return
 		}
 		req = filepath.Clean(req)
