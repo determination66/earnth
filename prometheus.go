@@ -1,7 +1,6 @@
-package prometheus
+package earnth
 
 import (
-	"github.com/determination66/earnth"
 	"github.com/prometheus/client_golang/prometheus"
 	"strconv"
 	"time"
@@ -14,7 +13,7 @@ type MiddlewareBuilder struct {
 	Help        string
 }
 
-func (m *MiddlewareBuilder) Build() earnth.MiddlewareFunc {
+func (m *MiddlewareBuilder) Build() MiddlewareFunc {
 	summaryVec := prometheus.NewSummaryVec(prometheus.SummaryOpts{
 		Name:        m.Name,
 		Subsystem:   m.Subsystem,
@@ -22,8 +21,8 @@ func (m *MiddlewareBuilder) Build() earnth.MiddlewareFunc {
 		Help:        m.Help,
 	}, []string{"pattern", "method", "status"})
 	prometheus.MustRegister(summaryVec)
-	return func(next earnth.HandleFunc) earnth.HandleFunc {
-		return func(ctx *earnth.Context) {
+	return func(next HandleFunc) HandleFunc {
+		return func(ctx *Context) {
 			startTime := time.Now()
 			next(ctx)
 			endTime := time.Now()
@@ -32,7 +31,7 @@ func (m *MiddlewareBuilder) Build() earnth.MiddlewareFunc {
 	}
 }
 
-func report(dur time.Duration, ctx *earnth.Context, vec prometheus.ObserverVec) {
+func report(dur time.Duration, ctx *Context, vec prometheus.ObserverVec) {
 	status := ctx.RespStatusCode
 	route := "unknown"
 	if ctx.MatchedRoute != "" {

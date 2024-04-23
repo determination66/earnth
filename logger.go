@@ -1,9 +1,8 @@
-package logger
+package earnth
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/determination66/earnth"
 	"log"
 )
 
@@ -23,7 +22,7 @@ func NewLoggerMiddlewareBuilder() *LoggerMiddlewareBuilder {
 
 // Logger the Default logger
 // if you want to type,you can use RegisterLogFunc for your logger
-func Logger() earnth.MiddlewareFunc {
+func Logger() MiddlewareFunc {
 	return NewLoggerMiddlewareBuilder().Build()
 }
 
@@ -42,9 +41,9 @@ type AccessLog struct {
 }
 
 // Build for build logger middleware
-func (b *LoggerMiddlewareBuilder) Build() earnth.MiddlewareFunc {
-	return func(next earnth.HandleFunc) earnth.HandleFunc {
-		return func(ctx *earnth.Context) {
+func (b *LoggerMiddlewareBuilder) Build() MiddlewareFunc {
+	return func(next HandleFunc) HandleFunc {
+		return func(ctx *Context) {
 			defer func() {
 				l := AccessLog{
 					Host: ctx.Req.Host,

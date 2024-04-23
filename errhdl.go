@@ -1,6 +1,4 @@
-package errhdl
-
-import "github.com/determination66/earnth"
+package earnth
 
 type ErrHdlMiddlewareBuilder struct {
 	resp map[int][]byte
@@ -18,9 +16,9 @@ func (m *ErrHdlMiddlewareBuilder) RegisterError(code int, resp []byte) *ErrHdlMi
 	return m
 }
 
-func (m *ErrHdlMiddlewareBuilder) Build() earnth.MiddlewareFunc {
-	return func(next earnth.HandleFunc) earnth.HandleFunc {
-		return func(ctx *earnth.Context) {
+func (m *ErrHdlMiddlewareBuilder) Build() MiddlewareFunc {
+	return func(next HandleFunc) HandleFunc {
+		return func(ctx *Context) {
 			next(ctx)
 			resp, ok := m.resp[ctx.RespStatusCode]
 			if ok {

@@ -1,7 +1,6 @@
-package prometheus
+package earnth
 
 import (
-	"earnth"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
 	"testing"
@@ -19,11 +18,11 @@ import (
 // earnth_http_request_count{instance_id="1234567",method="GET",pattern="unknown",status="404"} 1
 // 如果你启动了 prometheus 服务器，那么就配置它来采集这个 2112 端口和 /metrics 路径
 func TestMiddlewareBuilder_Build(t *testing.T) {
-	s := earnth.NewHTTPServer()
-	s.Get("/", func(ctx *earnth.Context) {
+	s := NewHTTPServer()
+	s.Get("/", func(ctx *Context) {
 		ctx.Resp.Write([]byte("hello, world"))
 	})
-	s.Get("/user", func(ctx *earnth.Context) {
+	s.Get("/user", func(ctx *Context) {
 		time.Sleep(time.Second)
 	})
 

@@ -1,24 +1,23 @@
-package recovery
+package earnth
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/determination66/earnth"
 	"log"
 	"net/http"
 )
 
 type RecoveryMiddlewareBuilder struct {
-	recoveryFunc func(ctx *earnth.Context, err any)
+	recoveryFunc func(ctx *Context, err any)
 }
 
-func Recovery() earnth.MiddlewareFunc {
+func Recovery() MiddlewareFunc {
 	return NewRecoveryMiddlewareBuilder().Build()
 }
 
 func NewRecoveryMiddlewareBuilder() *RecoveryMiddlewareBuilder {
 	return &RecoveryMiddlewareBuilder{
-		recoveryFunc: func(ctx *earnth.Context, err any) {
+		recoveryFunc: func(ctx *Context, err any) {
 			// Serialize error information into JSON format
 			recoveryLog := struct {
 				Host       string `json:"host"`
@@ -45,14 +44,14 @@ func NewRecoveryMiddlewareBuilder() *RecoveryMiddlewareBuilder {
 	}
 }
 
-func (r *RecoveryMiddlewareBuilder) RegisterLogFunc(f func(ctx *earnth.Context, err any)) *RecoveryMiddlewareBuilder {
+func (r *RecoveryMiddlewareBuilder) RegisterLogFunc(f func(ctx *Context, err any)) *RecoveryMiddlewareBuilder {
 	r.recoveryFunc = f
 	return r
 }
 
-func (r *RecoveryMiddlewareBuilder) Build() earnth.MiddlewareFunc {
-	return func(next earnth.HandleFunc) earnth.HandleFunc {
-		return func(ctx *earnth.Context) {
+func (r *RecoveryMiddlewareBuilder) Build() MiddlewareFunc {
+	return func(next HandleFunc) HandleFunc {
+		return func(ctx *Context) {
 			defer func() {
 				if err := recover(); err != nil {
 					r.recoveryFunc(ctx, err)
