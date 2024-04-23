@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-// MemorySize byte,you can modify it to limit the size you upload
+// MaxUpLoadSize MemorySize byte,you can modify it to limit the size you upload
 var MaxUpLoadSize int64 = 32 << 20 // 32MB
 
 type FileUpload struct {
@@ -79,5 +79,45 @@ func (f *FileUpload) Handle() HandleFunc {
 		}
 		ctx.RespStatusCode = http.StatusOK
 		ctx.RespData = []byte("upload success")
+	}
+}
+
+type FileDownload struct {
+	Dir string
+}
+
+func NewFileDownload(dir string) *FileDownload {
+	return &FileDownload{
+		Dir: dir,
+	}
+}
+
+func (f *FileDownload) Handle() HandleFunc {
+	return func(ctx *Context) {
+		// 用的是 xxx?file=xxx
+		req, err := ctx.QueryValue("file")
+		if err != nil {
+			ctx.RespStatusCode = http.StatusBadRequest
+			ctx.RespData = []byte("找不到目标文件")
+			return
+		}
+		req = filepath.Clean(req)
+		dst := filepath.Join(f.Dir, req)
+		// 做一个校验，防止相对路径引起攻击者下载了你的系统文件
+		// dst, err = filepath.Abs(dst)
+		// if strings.Contains(dst, d.Dir) {
+		//
+		// }
+		fn := filepath.Base(dst)
+		header := ctx.Resp.Header()
+		header.Set("Content-Disposition", "attachment;filename="+fn)
+		header.Set("Content-Description", "File Transfer")
+		header.Set("Content-Type", "application/octet-stream")
+		header.Set("Content-Transfer-Encoding", "binary")
+		header.Set("Expires", "0")
+		header.Set("Cache-Control", "must-revalidate")
+		header.Set("Pragma", "public")
+
+		http.ServeFile(ctx.Resp, ctx.Req, dst)
 	}
 }

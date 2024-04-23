@@ -49,3 +49,11 @@ func TestUpload(t *testing.T) {
 	s.Post("/upload", fi.Handle())
 	s.Start(":9999")
 }
+
+func TestFileDownload(t *testing.T) {
+	s := NewHTTPServer()
+	fu := NewFileDownload(filepath.Join("testdata", "download"))
+	s.Get("/download", fu.Handle())
+
+	s.Start(":9999")
+}
