@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// SessionManager 友好管理和封装Session
 type SessionManager struct {
 	Propagator
 	Store
