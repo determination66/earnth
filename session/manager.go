@@ -35,7 +35,7 @@ func (m *Manager) GetSession(ctx *earnth.Context) (Session, error) {
 	return sess, err
 }
 
-func (m *Manager) InitSession(ctx *earnth.Context, sess Session) (Session, error) {
+func (m *Manager) InitSession(ctx *earnth.Context) (Session, error) {
 	id := uuid.New().String()
 	sess, err := m.Generate(ctx.Req.Context(), id)
 	if err != nil {
