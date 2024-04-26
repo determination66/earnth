@@ -5,14 +5,14 @@ import (
 	"github.com/google/uuid"
 )
 
-// SessionManager 友好管理和封装Session
-type SessionManager struct {
+// Manager 友好管理和封装Session
+type Manager struct {
 	Propagator
 	Store
 	CtxSessKey string
 }
 
-func (m *SessionManager) GetSession(ctx *earnth.Context) (Session, error) {
+func (m *Manager) GetSession(ctx *earnth.Context) (Session, error) {
 	if ctx.UserValues == nil {
 		ctx.UserValues = make(map[string]any, 1)
 	}
@@ -35,7 +35,7 @@ func (m *SessionManager) GetSession(ctx *earnth.Context) (Session, error) {
 	return sess, err
 }
 
-func (m *SessionManager) InitSession(ctx *earnth.Context, sess Session) (Session, error) {
+func (m *Manager) InitSession(ctx *earnth.Context, sess Session) (Session, error) {
 	id := uuid.New().String()
 	sess, err := m.Generate(ctx.Req.Context(), id)
 	if err != nil {
@@ -46,7 +46,7 @@ func (m *SessionManager) InitSession(ctx *earnth.Context, sess Session) (Session
 	return sess, err
 }
 
-func (m *SessionManager) RefreshSession(ctx *earnth.Context) error {
+func (m *Manager) RefreshSession(ctx *earnth.Context) error {
 	sess, err := m.GetSession(ctx)
 	if err != nil {
 		return err
@@ -54,7 +54,7 @@ func (m *SessionManager) RefreshSession(ctx *earnth.Context) error {
 	return m.Refresh(ctx.Req.Context(), sess.ID())
 }
 
-func (m *SessionManager) RemoveSession(ctx *earnth.Context) error {
+func (m *Manager) RemoveSession(ctx *earnth.Context) error {
 	sess, err := m.GetSession(ctx)
 	if err != nil {
 		return err
