@@ -23,6 +23,8 @@ type Context struct {
 
 	queryValues url.Values
 	//RespCommitted bool // Add a field to mark if the response has been committed
+
+	UserValues map[string]any
 }
 
 func newContext(req *http.Request, resp http.ResponseWriter, tplEngine TemplateEngine) *Context {
