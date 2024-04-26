@@ -2,14 +2,14 @@ package test
 
 import (
 	"github.com/determination66/earnth"
-	earnth2 "github.com/determination66/earnth/session"
+	"github.com/determination66/earnth/session"
 	"net/http"
 	"testing"
 )
 
 // 登录校验
-var p earnth2.Propagator
-var s earnth2.Store
+var p session.Propagator
+var s session.Store
 
 func LoginMiddleware(next earnth.HandleFunc) earnth.HandleFunc {
 	return func(ctx *earnth.Context) {
@@ -30,6 +30,10 @@ func LoginMiddleware(next earnth.HandleFunc) earnth.HandleFunc {
 			ctx.RespData = []byte("please login again")
 			return
 		}
+		//插入刷新session的逻辑
+		//...
+
+		next(ctx)
 	}
 }
 
